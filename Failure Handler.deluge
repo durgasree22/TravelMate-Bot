@@ -1,0 +1,5 @@
+response = Map();
+response.put("action","reply");
+response.put("replies",{"Something went wrong while processing your request. Please try again or click 'Restart' to start over."});
+response.put("suggestions",{"Restart"});
+return response;
