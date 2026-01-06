@@ -1,0 +1,3119 @@
+response = Map();
+context_id = ifnull(context_id,"");
+answers = ifnull(answers,Map());
+// JOURNEY TYPE SELECTION
+if(context_id == "journey_type_selection")
+{
+	if(!answers.containsKey("journey_type"))
+	{
+		question = {"name":"journey_type","replies":{"How would you like to plan your trip?\nChoose 'Explore Destinations' for fixed tour packages.\nChoose 'Plan an Itinerary' for custom tour package selection."},"suggestions":{"Explore Destinations","Plan an Itinerary"}};
+		response.put("action","context");
+		response.put("context_id","journey_type_selection");
+		response.put("questions",{question});
+		return response;
+	}
+	journey_choice = answers.get("journey_type").get("text");
+	if(journey_choice == "Explore Destinations")
+	{
+		response.put("action","context");
+		response.put("context_id","main_menu");
+		question = {"name":"main_choice","replies":{"Desi Vibes or Global Adventures? 🌍"},"suggestions":{"Explore India","Explore International"}};
+		response.put("questions",{question});
+		return response;
+	}
+	else if(journey_choice == "Plan an Itinerary")
+	{
+		response.put("action","context");
+		response.put("context_id","custom_itinerary_start");
+		question = {"name":"start_custom","replies":{"Perfect! Let's create a custom itinerary just for you! 🗺️\n\nI'll need some details to plan the perfect trip."},"suggestions":{"Let's Start!"}};
+		response.put("questions",{question});
+		return response;
+	}
+	else
+	{
+		question = {"name":"journey_type","replies":{"Please use the buttons to select an option."},"suggestions":{"Explore Destinations","Plan an Itinerary"}};
+		response.put("action","context");
+		response.put("context_id","journey_type_selection");
+		response.put("questions",{question});
+		return response;
+	}
+}
+// MAIN MENU
+if(context_id == "main_menu")
+{
+	if(!answers.containsKey("main_choice"))
+	{
+		question = {"name":"main_choice","replies":{"Desi Vibes or Global Adventures? 🌍"},"suggestions":{"Explore India","Explore International"}};
+		response.put("action","context");
+		response.put("context_id","main_menu");
+		response.put("questions",{question});
+		return response;
+	}
+	main_choice = answers.get("main_choice").get("text");
+	if(main_choice == "Explore India")
+	{
+		response.put("action","context");
+		response.put("context_id","india_trip_type_selection");
+		question = {"name":"india_trip_type_pre","replies":{"Desi Vibes! 🇮🇳\n\nFirst, tell me who's traveling?"},"suggestions":{"Solo Trip","Couple Trip","Family Trip","Friends Trip"}};
+		response.put("questions",{question});
+		return response;
+	}
+	else if(main_choice == "Explore International")
+	{
+		response.put("action","context");
+		response.put("context_id","intl_trip_type_selection");
+		question = {"name":"intl_trip_type_pre","replies":{"Going Global! ✈️\n\nFirst, tell me who's traveling?"},"suggestions":{"Solo Trip","Couple Trip","Family Trip","Friends Trip"}};
+		response.put("questions",{question});
+		return response;
+	}
+	else
+	{
+		question = {"name":"main_choice","replies":{"Please use the buttons to select an option."},"suggestions":{"Explore India","Explore International"}};
+		response.put("action","context");
+		response.put("context_id","main_menu");
+		response.put("questions",{question});
+		return response;
+	}
+}
+// CUSTOM ITINERARY FLOW
+if(context_id == "custom_itinerary_start")
+{
+	if(!answers.containsKey("start_custom"))
+	{
+		question = {"name":"start_custom","replies":{"Perfect! Let's create a custom itinerary just for you! 🗺️\n\nI'll need some details to plan the perfect trip."},"suggestions":{"Let's Start!"}};
+		response.put("action","context");
+		response.put("context_id","custom_itinerary_start");
+		response.put("questions",{question});
+		return response;
+	}
+	response.put("action","context");
+	response.put("context_id","custom_travelers");
+	question = {"name":"num_travelers","replies":{"How many people will be traveling? 👥\n\n(Enter a number between 1-20)"},"input":{"type":"name","placeholder":"e.g., 4"}};
+	response.put("questions",{question});
+	return response;
+}
+// CUSTOM ITINERARY - COLLECT NUMBER OF TRAVELERS
+if(context_id == "custom_travelers")
+{
+	if(!answers.containsKey("num_travelers"))
+	{
+		question = {"name":"num_travelers","replies":{"Please enter the number of travelers."},"input":{"type":"name","placeholder":"e.g., 4"}};
+		response.put("action","context");
+		response.put("context_id","custom_travelers");
+		response.put("questions",{question});
+		return response;
+	}
+	travelers_text = answers.get("num_travelers").get("text");
+	try 
+	{
+		num_travelers = travelers_text.toNumber();
+	}
+	catch (e)
+	{
+		question = {"name":"num_travelers","replies":{"Please enter a valid number (e.g., 4)"},"input":{"type":"name","placeholder":"e.g., 4"}};
+		response.put("action","context");
+		response.put("context_id","custom_travelers");
+		response.put("questions",{question});
+		return response;
+	}
+	if(num_travelers < 1 || num_travelers > 20)
+	{
+		question = {"name":"num_travelers","replies":{"Please enter a number between 1 and 20."},"input":{"type":"name","placeholder":"e.g., 4"}};
+		response.put("action","context");
+		response.put("context_id","custom_travelers");
+		response.put("questions",{question});
+		return response;
+	}
+	response.put("action","context");
+	response.put("context_id","custom_destination__" + num_travelers);
+	question = {"name":"destination","replies":{"Great! " + num_travelers + " traveler(s) noted. ✅\n\nWhere would you like to go? 🌍\n\n(Enter your dream destination)"},"input":{"type":"name","placeholder":"e.g., Paris, Goa, Manali"}};
+	response.put("questions",{question});
+	return response;
+}
+// CUSTOM ITINERARY - COLLECT DESTINATION
+if(context_id.startsWith("custom_destination__") && context_id.indexOf("__",20) == -1)
+{
+	if(!answers.containsKey("destination"))
+	{
+		question = {"name":"destination","replies":{"Where would you like to go? 🌍\n\n(Enter your dream destination)"},"input":{"type":"name","placeholder":"e.g., Paris, Goa, Manali"}};
+		response.put("action","context");
+		response.put("context_id",context_id);
+		response.put("questions",{question});
+		return response;
+	}
+	num_travelers = context_id.replaceAll("custom_destination__","");
+	destination = answers.get("destination").get("text");
+	response.put("action","context");
+	response.put("context_id","custom_current_location__" + num_travelers + "__" + destination);
+	question = {"name":"current_location","replies":{"Perfect! " + destination + " sounds amazing! 🎯\n\nWhat is your current location? 📍\n\n(This helps us plan the best route for you)"},"input":{"type":"name","placeholder":"e.g., Delhi, Mumbai, Bangalore"}};
+	response.put("questions",{question});
+	return response;
+}
+// CUSTOM ITINERARY - COLLECT CURRENT LOCATION & AI ROUTE ANALYSIS
+if(context_id.startsWith("custom_current_location"))
+{
+	if(!answers.containsKey("current_location"))
+	{
+		question = {"name":"current_location","replies":{"What is your current location? 📍\n\n(This helps us plan the best route for you)"},"input":{"type":"name","placeholder":"e.g., Delhi, Mumbai, Bangalore"}};
+		response.put("action","context");
+		response.put("context_id",context_id);
+		response.put("questions",{question});
+		return response;
+	}
+	parts = context_id.replaceAll("custom_current_location__","").toList("__");
+	num_travelers = parts.get(0);
+	destination = parts.get(1);
+	current_location = answers.get("current_location").get("text");
+	
+	groq_api_key = "<GROQ_API_KEY>";
+	route_prompt = "Analyze the journey from " + current_location + " to " + destination + ". Provide a brief route analysis covering: estimated distance, travel time, public transport availability (trains/buses), and private transport options (car/taxi). Keep response under 200 words.";
+	
+	try 
+	{
+		groq_payload = Map();
+		groq_payload.put("model","llama-3.1-8b-instant");
+		messages_list = List();
+		message_map = Map();
+		message_map.put("role","user");
+		message_map.put("content",route_prompt);
+		messages_list.add(message_map);
+		groq_payload.put("messages",messages_list);
+		groq_payload.put("max_tokens",300);
+		groq_payload.put("temperature",0.7);
+		
+		groq_response = invokeurl
+		[
+			url :"https://api.groq.com/openai/v1/chat/completions"
+			type :POST
+			parameters:groq_payload.toString()
+			headers:{"Authorization":"Bearer " + groq_api_key,"Content-Type":"application/json"}
+		];
+		
+		if(groq_response.containsKey("choices") && groq_response.get("choices").size() > 0)
+		{
+			choice = groq_response.get("choices").get(0);
+			if(choice.containsKey("message") && choice.get("message").containsKey("content"))
+			{
+				ai_analysis = choice.get("message").get("content");
+				next_context = "custom_transport_choice__" + num_travelers + "__" + destination + "__" + current_location;
+				response.put("action","context");
+				response.put("context_id",next_context);
+				question = {"name":"transport_choice","replies":{"📊 Route Analysis:\n\n" + ai_analysis + "\n\n🚗 How would you like to travel?"},"suggestions":{"Public Transport","Private Transport"}};
+				response.put("questions",{question});
+				return response;
+			}
+		}
+	
+		next_context = "custom_transport_choice__" + num_travelers + "__" + destination + "__" + current_location;
+		response.put("action","context");
+		response.put("context_id",next_context);
+		question = {"name":"transport_choice","replies":{"Great! Now let's plan your journey from " + current_location + " to " + destination + ". 🗺️\n\n🚗 How would you like to travel?"},"suggestions":{"Public Transport","Private Transport"}};
+		response.put("questions",{question});
+		return response;
+	}
+	catch (e)
+	{
+		info "Groq API Error: " + e;
+		next_context = "custom_transport_choice__" + num_travelers + "__" + destination + "__" + current_location;
+		response.put("action","context");
+		response.put("context_id",next_context);
+		question = {"name":"transport_choice","replies":{"Great! Now let's plan your journey from " + current_location + " to " + destination + ". 🗺️\n\n🚗 How would you like to travel?"},"suggestions":{"Public Transport","Private Transport"}};
+		response.put("questions",{question});
+		return response;
+	}
+}
+// CUSTOM TRANSPORT CHOICE - ASK FOR DAYS (NEW STEP)
+if(context_id.startsWith("custom_transport_choice__"))
+{
+	if(!answers.containsKey("transport_choice"))
+	{
+		question = {"name":"transport_choice","replies":{"Please select how you'd like to travel."},"suggestions":{"Public Transport","Private Transport"}};
+		response.put("action","context");
+		response.put("context_id",context_id);
+		response.put("questions",{question});
+		return response;
+	}
+	
+	transport_type = answers.get("transport_choice").get("text");
+
+	transport_code = "";
+	if(transport_type == "Public Transport") { transport_code = "PublicTransport"; }
+	else { transport_code = "PrivateTransport"; }
+	
+	parts = context_id.replaceAll("custom_transport_choice__","").toList("__");
+	num_travelers = parts.get(0);
+	destination = parts.get(1);
+	current_location = parts.get(2);
+	
+	next_context = "custom_days_selection__" + num_travelers + "__" + destination + "__" + current_location + "__" + transport_code;
+	
+	response.put("action","context");
+	response.put("context_id",next_context);
+	question = {"name":"trip_days","replies":{"✅ Transport selected: " + transport_type + "\n\n📅 How many days are you planning for this trip?\n(e.g., 3, 5, 7)"},"input":{"type":"name","placeholder":"e.g., 5"}};
+	response.put("questions",{question});
+	return response;
+}
+// CUSTOM DAYS SELECTION - GENERATE ITINERARY (NEW HANDLER)
+if(context_id.startsWith("custom_days_selection__"))
+{
+	if(!answers.containsKey("trip_days"))
+	{
+		question = {"name":"trip_days","replies":{"Please enter the number of days for your trip."},"input":{"type":"name","placeholder":"e.g., 5"}};
+		response.put("action","context");
+		response.put("context_id",context_id);
+		response.put("questions",{question});
+		return response;
+	}
+	
+	days_text = answers.get("trip_days").get("text");
+	try 
+	{
+		num_days = days_text.toNumber();
+		if(num_days < 1 || num_days > 30)
+		{
+			question = {"name":"trip_days","replies":{"Please enter a duration between 1 and 30 days."},"input":{"type":"name","placeholder":"e.g., 5"}};
+			response.put("action","context");
+			response.put("context_id",context_id);
+			response.put("questions",{question});
+			return response;
+		}
+	}
+	catch (e)
+	{
+		question = {"name":"trip_days","replies":{"Please enter a valid number of days."},"input":{"type":"name","placeholder":"e.g., 5"}};
+		response.put("action","context");
+		response.put("context_id",context_id);
+		response.put("questions",{question});
+		return response;
+	}
+	
+	parts = context_id.replaceAll("custom_days_selection__","").toList("__");
+	num_travelers = parts.get(0);
+	destination = parts.get(1);
+	current_location = parts.get(2);
+	transport_code = parts.get(3);
+	transport_readable = "Private Transport (Car/Taxi)";
+	if(transport_code == "PublicTransport") { transport_readable = "Public Transport (Train/Bus)"; }
+	
+	groq_api_key = "<GROQ_API_KEY>";
+	
+	itinerary_prompt = "Create a detailed " + num_days + "-day travel itinerary from " + current_location + " to " + destination + " for " + num_travelers + " travelers using " + transport_readable + ". Include:\n1. Day-by-day activities\n2. Transport details\n3. Estimated budget range in INR\n4. Top attractions for each day\nKeep response under 500 words.";
+	
+	try 
+	{
+		groq_payload = Map();
+		groq_payload.put("model","llama-3.1-8b-instant");
+		messages_list = List();
+		message_map = Map();
+		message_map.put("role","user");
+		message_map.put("content",itinerary_prompt);
+		messages_list.add(message_map);
+		groq_payload.put("messages",messages_list);
+		groq_payload.put("max_tokens",700);
+		groq_payload.put("temperature",0.7);
+		
+		groq_response = invokeurl
+		[
+			url :"https://api.groq.com/openai/v1/chat/completions"
+			type :POST
+			parameters:groq_payload.toString()
+			headers:{"Authorization":"Bearer " + groq_api_key,"Content-Type":"application/json"}
+		];
+		
+		if(groq_response.containsKey("choices") && groq_response.get("choices").size() > 0)
+		{
+			choice = groq_response.get("choices").get(0);
+			if(choice.containsKey("message") && choice.get("message").containsKey("content"))
+			{
+				itinerary_details = choice.get("message").get("content");
+				
+				next_context = "custom_itinerary_review__" + num_travelers + "__" + destination + "__" + current_location + "__" + transport_code + "__" + num_days;
+				
+				response.put("action","context");
+				response.put("context_id",next_context);
+				question = {"name":"itinerary_action","replies":{"🎉 Your Custom " + num_days + "-Day Trip Itinerary is Ready!\n\n📍 Destination: " + destination + "\n👥 Travelers: " + num_travelers + "\n🚍 Transport: " + transport_readable + "\n\n" + itinerary_details + "\n\nWould you like to:"},"suggestions":{"Select this Trip","Edit Itinerary","Start Over"}};
+				response.put("questions",{question});
+				return response;
+			}
+		}
+	
+		next_context = "custom_itinerary_review__" + num_travelers + "__" + destination + "__" + current_location + "__" + transport_code + "__" + num_days;
+		response.put("action","context");
+		response.put("context_id",next_context);
+		question = {"name":"itinerary_action","replies":{"🎉 Your Custom Trip Itinerary is Ready!\n\n📍 Destination: " + destination + "\n📅 Duration: " + num_days + " Days\n👥 Travelers: " + num_travelers + "\n\nWould you like to:"},"suggestions":{"Select this Trip","Edit Itinerary","Start Over"}};
+		response.put("questions",{question});
+		return response;
+	}
+	catch (e)
+	{
+		info "Groq Itinerary API Error: " + e;
+		next_context = "custom_itinerary_review__" + num_travelers + "__" + destination + "__" + current_location + "__" + transport_code + "__" + num_days;
+		response.put("action","context");
+		response.put("context_id",next_context);
+		question = {"name":"itinerary_action","replies":{"🎉 Your Custom Trip Itinerary is Ready!\n\n📍 Destination: " + destination + "\n📅 Duration: " + num_days + " Days\n\nWould you like to:"},"suggestions":{"Select this Trip","Edit Itinerary","Start Over"}};
+		response.put("questions",{question});
+		return response;
+	}
+}
+// CUSTOM ITINERARY REVIEW HANDLER
+if(context_id.startsWith("custom_itinerary_review__"))
+{
+	if(!answers.containsKey("itinerary_action"))
+	{
+		question = {"name":"itinerary_action","replies":{"Would you like to:"},"suggestions":{"Select this Trip","Edit Itinerary","Start Over"}};
+		response.put("action","context");
+		response.put("context_id",context_id);
+		response.put("questions",{question});
+		return response;
+	}
+	action_choice = answers.get("itinerary_action").get("text");
+	parts = context_id.replaceAll("custom_itinerary_review__","").toList("__");
+	num_travelers = parts.get(0);
+	destination = parts.get(1);
+	current_location = parts.get(2);
+	transport_mode = parts.get(3);
+
+	num_days = "5"; 
+	if(parts.size() >= 5) { num_days = parts.get(4); }
+	
+	if(action_choice == "Select this Trip")
+	{
+	
+		custom_package_context = "collect_name__post_pricing__CUSTOM__" + destination + "__CustomItinerary__0__" + num_travelers + "__" + current_location + "__" + transport_mode + "__" + num_days;
+		response.put("action","context");
+		response.put("context_id",custom_package_context);
+		question = {"name":"user_name","replies":{"Great! Let's get your contact details to send you the complete itinerary. 📧\n\nPlease enter your Full Name:"},"input":{"type":"name","placeholder":"Your Name"}};
+		response.put("questions",{question});
+		return response;
+	}
+	else if(action_choice == "Edit Itinerary")
+	{
+		edit_context = "custom_edit_select__" + num_travelers + "__" + destination + "__" + current_location + "__" + transport_mode + "__" + num_days;
+		response.put("action","context");
+		response.put("context_id",edit_context);
+		question = {"name":"edit_choice","replies":{"What would you like to edit?"},"suggestions":{"Number of Travelers","Destination","Current Location","Transport Mode","Number of Days"}};
+		response.put("questions",{question});
+		return response;
+	}
+	else if(action_choice == "Start Over")
+	{
+		response.put("action","context");
+		response.put("context_id","custom_itinerary_start");
+		question = {"name":"start_custom","replies":{"Perfect! Let's create a custom itinerary just for you! 🗺️\n\nI'll need some details to plan the perfect trip."},"suggestions":{"Let's Start!"}};
+		response.put("questions",{question});
+		return response;
+	}
+	else
+	{
+		question = {"name":"itinerary_action","replies":{"Please use the buttons to select an option."},"suggestions":{"Select this Trip","Edit Itinerary","Start Over"}};
+		response.put("action","context");
+		response.put("context_id",context_id);
+		response.put("questions",{question});
+		return response;
+	}
+}
+
+// CUSTOM EDIT SELECT HANDLER
+if(context_id.startsWith("custom_edit_select__"))
+{
+	if(!answers.containsKey("edit_choice"))
+	{
+		question = {"name":"edit_choice","replies":{"What would you like to edit?"},"suggestions":{"Number of Travelers","Destination","Current Location","Transport Mode","Number of Days"}};
+		response.put("action","context");
+		response.put("context_id",context_id);
+		response.put("questions",{question});
+		return response;
+	}
+	edit_selection = answers.get("edit_choice").get("text");
+	parts = context_id.replaceAll("custom_edit_select__","").toList("__");
+	num_travelers = parts.get(0);
+	destination = parts.get(1);
+	current_location = parts.get(2);
+	transport_mode = parts.get(3);
+	num_days = "5";
+	if(parts.size() >= 5) { num_days = parts.get(4); }
+	
+	if(edit_selection == "Number of Travelers")
+	{
+		edit_context = "custom_edit_travelers__" + num_travelers + "__" + destination + "__" + current_location + "__" + transport_mode;
+		response.put("action","context");
+		response.put("context_id",edit_context);
+		question = {"name":"new_travelers","replies":{"Current travelers: " + num_travelers + "\n\nEnter new number of travelers (1-20):"},"input":{"type":"name","placeholder":"e.g., 4"}};
+		response.put("questions",{question});
+		return response;
+	}
+	else if(edit_selection == "Destination")
+	{
+		edit_context = "custom_edit_destination__" + num_travelers + "__" + destination + "__" + current_location + "__" + transport_mode;
+		response.put("action","context");
+		response.put("context_id",edit_context);
+		question = {"name":"new_destination","replies":{"Current destination: " + destination + "\n\nEnter new destination:"},"input":{"type":"name","placeholder":"e.g., Paris, Goa, Manali"}};
+		response.put("questions",{question});
+		return response;
+	}
+	else if(edit_selection == "Current Location")
+	{
+		edit_context = "custom_edit_location__" + num_travelers + "__" + destination + "__" + current_location + "__" + transport_mode;
+		response.put("action","context");
+		response.put("context_id",edit_context);
+		question = {"name":"new_location","replies":{"Current location: " + current_location + "\n\nEnter new location:"},"input":{"type":"name","placeholder":"e.g., Delhi, Mumbai, Bangalore"}};
+		response.put("questions",{question});
+		return response;
+	}
+	else if(edit_selection == "Transport Mode")
+	{
+	
+		next_context = "custom_transport_choice__" + num_travelers + "__" + destination + "__" + current_location;
+		response.put("action","context");
+		response.put("context_id",next_context);
+		question = {"name":"transport_choice","replies":{"Select new transport mode:"},"suggestions":{"Public Transport","Private Transport"}};
+		response.put("questions",{question});
+		return response;
+	}
+	else if(edit_selection == "Number of Days")
+	{
+	
+		transport_readable = "Private Transport";
+		if(transport_mode == "PublicTransport") { transport_readable = "Public Transport"; }
+		
+		next_context = "custom_days_selection__" + num_travelers + "__" + destination + "__" + current_location + "__" + transport_mode;
+		response.put("action","context");
+		response.put("context_id",next_context);
+		question = {"name":"trip_days","replies":{"Current duration: " + num_days + " days\n\nEnter new duration (1-30 days):"},"input":{"type":"name","placeholder":"e.g., 7"}};
+		response.put("questions",{question});
+		return response;
+	}
+}
+
+// EDIT TRAVELERS HANDLER
+if(context_id.startsWith("custom_edit_travelers__"))
+{
+	if(!answers.containsKey("new_travelers"))
+	{
+		question = {"name":"new_travelers","replies":{"Enter new number of travelers (1-20):"},"input":{"type":"name","placeholder":"e.g., 4"}};
+		response.put("action","context");
+		response.put("context_id",context_id);
+		response.put("questions",{question});
+		return response;
+	}
+	parts = context_id.replaceAll("custom_edit_travelers__","").toList("__");
+	old_travelers = parts.get(0);
+	destination = parts.get(1);
+	current_location = parts.get(2);
+	transport_mode = parts.get(3);
+	new_travelers_text = answers.get("new_travelers").get("text");
+	try 
+	{
+		new_travelers = new_travelers_text.toNumber();
+	}
+	catch (e)
+	{
+		question = {"name":"new_travelers","replies":{"Please enter a valid number (e.g., 4)"},"input":{"type":"name","placeholder":"e.g., 4"}};
+		response.put("action","context");
+		response.put("context_id",context_id);
+		response.put("questions",{question});
+		return response;
+	}
+	if(new_travelers < 1 || new_travelers > 20)
+	{
+		question = {"name":"new_travelers","replies":{"Please enter a number between 1 and 20."},"input":{"type":"name","placeholder":"e.g., 4"}};
+		response.put("action","context");
+		response.put("context_id",context_id);
+		response.put("questions",{question});
+		return response;
+	}
+
+	next_context = "custom_transport_choice__" + new_travelers + "__" + destination + "__" + current_location;
+	response.put("action","context");
+	response.put("context_id",next_context);
+	question = {"name":"transport_choice","replies":{"✅ Updated travelers: " + new_travelers + "\n\nRecalculating itinerary...\n\n🚗 How would you like to travel?"},"suggestions":{"Public Transport","Private Transport"}};
+	response.put("questions",{question});
+	return response;
+}
+
+// EDIT DESTINATION HANDLER
+if(context_id.startsWith("custom_edit_destination__"))
+{
+	if(!answers.containsKey("new_destination"))
+	{
+		question = {"name":"new_destination","replies":{"Enter new destination:"},"input":{"type":"name","placeholder":"e.g., Paris, Goa, Manali"}};
+		response.put("action","context");
+		response.put("context_id",context_id);
+		response.put("questions",{question});
+		return response;
+	}
+	parts = context_id.replaceAll("custom_edit_destination__","").toList("__");
+	num_travelers = parts.get(0);
+	old_destination = parts.get(1);
+	current_location = parts.get(2);
+	transport_mode = parts.get(3);
+	new_destination = answers.get("new_destination").get("text");
+
+	next_context = "custom_transport_choice__" + num_travelers + "__" + new_destination + "__" + current_location;
+	response.put("action","context");
+	response.put("context_id",next_context);
+	question = {"name":"transport_choice","replies":{"✅ Updated destination: " + new_destination + "\n\nRecalculating route...\n\n🚗 How would you like to travel?"},"suggestions":{"Public Transport","Private Transport"}};
+	response.put("questions",{question});
+	return response;
+}
+
+// EDIT LOCATION HANDLER
+if(context_id.startsWith("custom_edit_location__"))
+{
+	if(!answers.containsKey("new_location"))
+	{
+		question = {"name":"new_location","replies":{"Enter new location:"},"input":{"type":"name","placeholder":"e.g., Delhi, Mumbai, Bangalore"}};
+		response.put("action","context");
+		response.put("context_id",context_id);
+		response.put("questions",{question});
+		return response;
+	}
+	parts = context_id.replaceAll("custom_edit_location__","").toList("__");
+	num_travelers = parts.get(0);
+	destination = parts.get(1);
+	old_location = parts.get(2);
+	transport_mode = parts.get(3);
+	new_location = answers.get("new_location").get("text");
+
+	next_context = "custom_transport_choice__" + num_travelers + "__" + destination + "__" + new_location;
+	response.put("action","context");
+	response.put("context_id",next_context);
+	question = {"name":"transport_choice","replies":{"✅ Updated location: " + new_location + "\n\nRecalculating route...\n\n🚗 How would you like to travel?"},"suggestions":{"Public Transport","Private Transport"}};
+	response.put("questions",{question});
+	return response;
+}
+// EDIT TRANSPORT HANDLER
+if(context_id.startsWith("custom_edit_transport__"))
+{
+	if(!answers.containsKey("new_transport"))
+	{
+		question = {"name":"new_transport","replies":{"Select new transport mode:"},"suggestions":{"Public Transport","Private Transport"}};
+		response.put("action","context");
+		response.put("context_id",context_id);
+		response.put("questions",{question});
+		return response;
+	}
+	parts = context_id.replaceAll("custom_edit_transport__","").toList("__");
+	num_travelers = parts.get(0);
+	destination = parts.get(1);
+	current_location = parts.get(2);
+	old_transport = parts.get(3);
+	new_transport = answers.get("new_transport").get("text");
+
+	next_context = "custom_transport_choice__" + num_travelers + "__" + destination + "__" + current_location;
+	response.put("action","context");
+	response.put("context_id",next_context);
+	question = {"name":"transport_choice","replies":{"✅ Updated transport: " + new_transport + "\n\nRecalculating itinerary...\n\n🚗 Confirm your transport choice:"},"suggestions":{"Public Transport","Private Transport"}};
+	response.put("questions",{question});
+	return response;
+}
+// EXPLORE INDIA
+if(context_id == "explore_india")
+{
+	if(!answers.containsKey("india_places"))
+	{
+		question = {"name":"india_places","replies":{"Please select a destination from the list."},"suggestions":{"Goa","Kerala","Kashmir","Manali","Ladakh","Jaipur"}};
+		response.put("action","context");
+		response.put("context_id","explore_india");
+		response.put("questions",{question});
+		return response;
+	}
+	place = answers.get("india_places").get("text");
+	img_map = Map();
+	img_map.put("Goa","https://raw.githubusercontent.com/K-Mokshagna/TravelMate-images/main/goa%20image.jpeg");
+	img_map.put("Kerala","https://raw.githubusercontent.com/K-Mokshagna/TravelMate-images/main/kerala%20image.jpeg");
+	img_map.put("Kashmir","https://raw.githubusercontent.com/K-Mokshagna/TravelMate-images/main/kashmir%20image.jpeg");
+	img_map.put("Manali","https://raw.githubusercontent.com/K-Mokshagna/TravelMate-images/main/manali%20image.jpeg");
+	img_map.put("Ladakh","https://raw.githubusercontent.com/K-Mokshagna/TravelMate-images/main/ladakh%20image.jpeg");
+	img_map.put("Jaipur","https://raw.githubusercontent.com/K-Mokshagna/TravelMate-images/main/jaipur%20image.jpeg");
+	img_url = ifnull(img_map.get(place),"https://raw.githubusercontent.com/K-Mokshagna/TravelMate-images/main/Welcome%20image.jpeg");
+	next_context = "india_trip_type__" + place;
+	response.put("action","context");
+	response.put("context_id",next_context);
+	question = {"name":"trip_type_india","replies":{{"type":"image","image":img_url,"text":place + " selected!"},{"text":"Who are you travelling with?"}},"suggestions":{"Family Trip","Couple Trip","Friends Trip","Solo Trip"}};
+	response.put("questions",{question});
+	return response;
+}
+// INDIA TRIP TYPE SELECTION & MEMBER COUNT
+if(context_id == "india_trip_type_selection")
+{
+	if(!answers.containsKey("india_trip_type_pre"))
+	{
+		question = {"name":"india_trip_type_pre","replies":{"Please select who you are travelling with."},"suggestions":{"Solo Trip","Couple Trip","Family Trip","Friends Trip"}};
+		response.put("action","context");
+		response.put("context_id","india_trip_type_selection");
+		response.put("questions",{question});
+		return response;
+	}
+	trip_type = answers.get("india_trip_type_pre").get("text");
+	
+	if(trip_type == "Family Trip" || trip_type == "Friends Trip")
+	{
+		response.put("action","context");
+		response.put("context_id","india_member_count_pre__" + trip_type);
+		question = {"name":"india_member_count_pre","replies":{"How many members are traveling? (Enter 1-20)"},"input":{"type":"name","placeholder":"e.g., 4"}};
+		response.put("questions",{question});
+		return response;
+	}
+	else
+	{
+	
+		member_count = 1;
+		if(trip_type == "Couple Trip")
+		{
+			member_count = 2;
+		}
+		
+		response.put("action","context");
+		response.put("context_id","india_carousel__" + trip_type + "__" + member_count);
+		
+		carousel_data = List();
+		
+		goa_pkg = Map();
+		goa_pkg.put("label","Book Now");
+		goa_pkg.put("name","BookGoa");
+		goa_pkg.put("type","postback");
+		goa_pkg.put("payload","BookGoa");
+		
+		goa = Map();
+		goa.put("title","Goa Sun & Sand");
+		goa.put("subtitle","3N/4D • ₹" + (24999 * member_count) + " total\n\n📍 North Goa Beaches, Fort Aguada, Sunset Cruise\n🏨 3★ Beach Resort (Breakfast)\n🍴 2 Meals/day included\n👥 " + member_count + " member(s)");
+		goa.put("id","goa");
+		goa.put("image","https://raw.githubusercontent.com/K-Mokshagna/TravelMate-images/main/goa%20image.jpeg");
+		goa.put("type","url");
+		goa.put("link","#");
+		goa.put("actions",{goa_pkg});
+		carousel_data.add(goa);
+		
+		kerala_pkg = Map();
+		kerala_pkg.put("label","Book Now");
+		kerala_pkg.put("name","BookKerala");
+		kerala_pkg.put("type","postback");
+		kerala_pkg.put("payload","BookKerala");
+		
+		kerala = Map();
+		kerala.put("title","Kerala Bliss");
+		kerala.put("subtitle","4N/5D • ₹" + (31999 * member_count) + " total\n\n📍 Munnar Hills, Alleppey Houseboat, Tea Gardens\n🏨 Hill Resort + Houseboat\n🍴 All meals included\n👥 " + member_count + " member(s)");
+		kerala.put("id","kerala");
+		kerala.put("image","https://raw.githubusercontent.com/K-Mokshagna/TravelMate-images/main/kerala%20image.jpeg");
+		kerala.put("type","url");
+		kerala.put("link","#");
+		kerala.put("actions",{kerala_pkg});
+		carousel_data.add(kerala);
+		
+		kashmir_pkg = Map();
+		kashmir_pkg.put("label","Book Now");
+		kashmir_pkg.put("name","BookKashmir");
+		kashmir_pkg.put("type","postback");
+		kashmir_pkg.put("payload","BookKashmir");
+		
+		kashmir = Map();
+		kashmir.put("title","Heaven on Earth");
+		kashmir.put("subtitle","4N/5D • ₹" + (34999 * member_count) + " total\n\n📍 Dal Lake, Gulmarg, Pahalgam, Srinagar\n🏨 Houseboat + 3★ Hotel\n🍴 Breakfast & Dinner\n👥 " + member_count + " member(s)");
+		kashmir.put("id","kashmir");
+		kashmir.put("image","https://raw.githubusercontent.com/K-Mokshagna/TravelMate-images/main/kashmir%20image.jpeg");
+		kashmir.put("type","url");
+		kashmir.put("link","#");
+		kashmir.put("actions",{kashmir_pkg});
+		carousel_data.add(kashmir);
+		
+		manali_pkg = Map();
+		manali_pkg.put("label","Book Now");
+		manali_pkg.put("name","BookManali");
+		manali_pkg.put("type","postback");
+		manali_pkg.put("payload","BookManali");
+		
+		manali = Map();
+		manali.put("title","Snow Retreat");
+		manali.put("subtitle","3N/4D • ₹" + (19999 * member_count) + " total\n\n📍 Solang Valley, Rohtang Pass, Atal Tunnel\n🏨 Mountain View Hotel\n🍴 Breakfast included\n👥 " + member_count + " member(s)");
+		manali.put("id","manali");
+		manali.put("image","https://raw.githubusercontent.com/K-Mokshagna/TravelMate-images/main/manali%20image.jpeg");
+		manali.put("type","url");
+		manali.put("link","#");
+		manali.put("actions",{manali_pkg});
+		carousel_data.add(manali);
+
+		ladakh_pkg = Map();
+		ladakh_pkg.put("label","Book Now");
+		ladakh_pkg.put("name","BookLadakh");
+		ladakh_pkg.put("type","postback");
+		ladakh_pkg.put("payload","BookLadakh");
+		
+		ladakh = Map();
+		ladakh.put("title","Ladakh Adventure");
+		ladakh.put("subtitle","5N/6D • ₹" + (45999 * member_count) + " total\n\n📍 Leh, Pangong Lake, Nubra Valley, Khardung La\n🏨 Luxury Camps + Hotel\n🍴 All meals included\n👥 " + member_count + " member(s)");
+		ladakh.put("id","ladakh");
+		ladakh.put("image","https://raw.githubusercontent.com/K-Mokshagna/TravelMate-images/main/ladakh%20image.jpeg");
+		ladakh.put("type","url");
+		ladakh.put("link","#");
+		ladakh.put("actions",{ladakh_pkg});
+		carousel_data.add(ladakh);
+		
+		jaipur_pkg = Map();
+		jaipur_pkg.put("label","Book Now");
+		jaipur_pkg.put("name","BookJaipur");
+		jaipur_pkg.put("type","postback");
+		jaipur_pkg.put("payload","BookJaipur");
+		
+		jaipur = Map();
+		jaipur.put("title","Royal Rajasthan");
+		jaipur.put("subtitle","3N/4D • ₹" + (22999 * member_count) + " total\n\n📍 Amber Fort, City Palace, Hawa Mahal, Jantar Mantar\n🏨 Heritage Haveli\n🍴 Breakfast + 1 Royal Dinner\n👥 " + member_count + " member(s)");
+		jaipur.put("id","jaipur");
+		jaipur.put("image","https://raw.githubusercontent.com/K-Mokshagna/TravelMate-images/main/jaipur%20image.jpeg");
+		jaipur.put("type","url");
+		jaipur.put("link","#");
+		jaipur.put("actions",{jaipur_pkg});
+		carousel_data.add(jaipur);
+		
+		question = Map();
+		question.put("name","india_carousel_selection");
+		replies_list = List();
+		carousel_reply = Map();
+		carousel_reply.put("type","multiple-product");
+		carousel_reply.put("text","Choose your perfect India destination:");
+		carousel_reply.put("elements",carousel_data);
+		replies_list.add(carousel_reply);
+		question.put("replies",replies_list);
+		response.put("questions",{question});
+		return response;
+	}
+}
+// INDIA MEMBER COUNT HANDLER
+if(context_id.startsWith("india_member_count_pre__"))
+{
+	if(!answers.containsKey("india_member_count_pre"))
+	{
+		question = {"name":"india_member_count_pre","replies":{"Please enter the number of members."},"input":{"type":"name","placeholder":"e.g., 4"}};
+		response.put("action","context");
+		response.put("context_id",context_id);
+		response.put("questions",{question});
+		return response;
+	}
+	
+	trip_type = context_id.replaceAll("india_member_count_pre__","");
+	member_text = answers.get("india_member_count_pre").get("text");
+	
+	try 
+	{
+		member_count = member_text.toNumber();
+		if(member_count < 1 || member_count > 20)
+		{
+			question = {"name":"india_member_count_pre","replies":{"Please enter a number between 1 and 20."},"input":{"type":"name","placeholder":"e.g., 4"}};
+			response.put("action","context");
+			response.put("context_id",context_id);
+			response.put("questions",{question});
+			return response;
+		}
+	}
+	catch (e)
+	{
+		question = {"name":"india_member_count_pre","replies":{"Please enter a valid number."},"input":{"type":"name","placeholder":"e.g., 4"}};
+		response.put("action","context");
+		response.put("context_id",context_id);
+		response.put("questions",{question});
+		return response;
+	}
+	
+	response.put("action","context");
+	response.put("context_id","india_carousel__" + trip_type + "__" + member_count);
+	
+	carousel_data = List();
+	
+	goa_pkg = Map();
+	goa_pkg.put("label","Book Now");
+	goa_pkg.put("name","BookGoa");
+	goa_pkg.put("type","postback");
+	goa_pkg.put("payload","BookGoa");
+	
+	goa = Map();
+	goa.put("title","Goa Sun & Sand");
+	goa.put("subtitle","3N/4D • ₹" + (24999 * member_count) + " total\n\n📍 North Goa Beaches, Fort Aguada, Sunset Cruise\n🏨 3★ Beach Resort (Breakfast)\n🍴 2 Meals/day included\n👥 " + member_count + " member(s)");
+	goa.put("id","goa");
+	goa.put("image","https://raw.githubusercontent.com/K-Mokshagna/TravelMate-images/main/goa%20image.jpeg");
+	goa.put("type","url");
+	goa.put("link","#");
+	goa.put("actions",{goa_pkg});
+	carousel_data.add(goa);
+	
+	kerala_pkg = Map();
+	kerala_pkg.put("label","Book Now");
+	kerala_pkg.put("name","BookKerala");
+	kerala_pkg.put("type","postback");
+	kerala_pkg.put("payload","BookKerala");
+	
+	kerala = Map();
+	kerala.put("title","Kerala Bliss");
+	kerala.put("subtitle","4N/5D • ₹" + (31999 * member_count) + " total\n\n📍 Munnar Hills, Alleppey Houseboat, Tea Gardens\n🏨 Hill Resort + Houseboat\n🍴 All meals included\n👥 " + member_count + " member(s)");
+	kerala.put("id","kerala");
+	kerala.put("image","https://raw.githubusercontent.com/K-Mokshagna/TravelMate-images/main/kerala%20image.jpeg");
+	kerala.put("type","url");
+	kerala.put("link","#");
+	kerala.put("actions",{kerala_pkg});
+	carousel_data.add(kerala);
+	
+	kashmir_pkg = Map();
+	kashmir_pkg.put("label","Book Now");
+	kashmir_pkg.put("name","BookKashmir");
+	kashmir_pkg.put("type","postback");
+	kashmir_pkg.put("payload","BookKashmir");
+	
+	kashmir = Map();
+	kashmir.put("title","Heaven on Earth");
+	kashmir.put("subtitle","4N/5D • ₹" + (34999 * member_count) + " total\n\n📍 Dal Lake, Gulmarg, Pahalgam, Srinagar\n🏨 Houseboat + 3★ Hotel\n🍴 Breakfast & Dinner\n👥 " + member_count + " member(s)");
+	kashmir.put("id","kashmir");
+	kashmir.put("image","https://raw.githubusercontent.com/K-Mokshagna/TravelMate-images/main/kashmir%20image.jpeg");
+	kashmir.put("type","url");
+	kashmir.put("link","#");
+	kashmir.put("actions",{kashmir_pkg});
+	carousel_data.add(kashmir);
+	
+	manali_pkg = Map();
+	manali_pkg.put("label","Book Now");
+	manali_pkg.put("name","BookManali");
+	manali_pkg.put("type","postback");
+	manali_pkg.put("payload","BookManali");
+	
+	manali = Map();
+	manali.put("title","Snow Retreat");
+	manali.put("subtitle","3N/4D • ₹" + (19999 * member_count) + " total\n\n📍 Solang Valley, Rohtang Pass, Atal Tunnel\n🏨 Mountain View Hotel\n🍴 Breakfast included\n👥 " + member_count + " member(s)");
+	manali.put("id","manali");
+	manali.put("image","https://raw.githubusercontent.com/K-Mokshagna/TravelMate-images/main/manali%20image.jpeg");
+	manali.put("type","url");
+	manali.put("link","#");
+	manali.put("actions",{manali_pkg});
+	carousel_data.add(manali);
+	
+	ladakh_pkg = Map();
+	ladakh_pkg.put("label","Book Now");
+	ladakh_pkg.put("name","BookLadakh");
+	ladakh_pkg.put("type","postback");
+	ladakh_pkg.put("payload","BookLadakh");
+	
+	ladakh = Map();
+	ladakh.put("title","Ladakh Adventure");
+	ladakh.put("subtitle","5N/6D • ₹" + (45999 * member_count) + " total\n\n📍 Leh, Pangong Lake, Nubra Valley, Khardung La\n🏨 Luxury Camps + Hotel\n🍴 All meals included\n👥 " + member_count + " member(s)");
+	ladakh.put("id","ladakh");
+	ladakh.put("image","https://raw.githubusercontent.com/K-Mokshagna/TravelMate-images/main/ladakh%20image.jpeg");
+	ladakh.put("type","url");
+	ladakh.put("link","#");
+	ladakh.put("actions",{ladakh_pkg});
+	carousel_data.add(ladakh);
+	
+	jaipur_pkg = Map();
+	jaipur_pkg.put("label","Book Now");
+	jaipur_pkg.put("name","BookJaipur");
+	jaipur_pkg.put("type","postback");
+	jaipur_pkg.put("payload","BookJaipur");
+	
+	jaipur = Map();
+	jaipur.put("title","Royal Rajasthan");
+	jaipur.put("subtitle","3N/4D • ₹" + (22999 * member_count) + " total\n\n📍 Amber Fort, City Palace, Hawa Mahal, Jantar Mantar\n🏨 Heritage Haveli\n🍴 Breakfast + 1 Royal Dinner\n👥 " + member_count + " member(s)");
+	jaipur.put("id","jaipur");
+	jaipur.put("image","https://raw.githubusercontent.com/K-Mokshagna/TravelMate-images/main/jaipur%20image.jpeg");
+	jaipur.put("type","url");
+	jaipur.put("link","#");
+	jaipur.put("actions",{jaipur_pkg});
+	carousel_data.add(jaipur);
+	
+	question = Map();
+	question.put("name","india_carousel_selection");
+	replies_list = List();
+	carousel_reply = Map();
+	carousel_reply.put("type","multiple-product");
+	carousel_reply.put("text","Choose your perfect India destination:");
+	carousel_reply.put("elements",carousel_data);
+	replies_list.add(carousel_reply);
+	question.put("replies",replies_list);
+	response.put("questions",{question});
+	return response;
+}
+// EXPLORE INTERNATIONAL
+if(context_id == "explore_international")
+{
+	if(!answers.containsKey("intl_places"))
+	{
+		question = {"name":"intl_places","replies":{"Please select a destination."},"suggestions":{"Dubai","Bali","Maldives","Singapore","Thailand","Vietnam"}};
+		response.put("action","context");
+		response.put("context_id","explore_international");
+		response.put("questions",{question});
+		return response;
+	}
+	place = answers.get("intl_places").get("text");
+	img_map = Map();
+	img_map.put("Dubai","https://raw.githubusercontent.com/K-Mokshagna/TravelMate-images/main/dubai%20image.jpeg");
+	img_map.put("Bali","https://raw.githubusercontent.com/K-Mokshagna/TravelMate-images/main/bali%20image.jpeg");
+	img_map.put("Maldives","https://raw.githubusercontent.com/K-Mokshagna/TravelMate-images/main/maldives%20image.jpeg");
+	img_map.put("Singapore","https://raw.githubusercontent.com/K-Mokshagna/TravelMate-images/main/singapore%20image_converted.jpg");
+	img_map.put("Thailand","https://raw.githubusercontent.com/K-Mokshagna/TravelMate-images/main/thailand%20image_converted.jpg");
+	img_map.put("Vietnam","https://raw.githubusercontent.com/K-Mokshagna/TravelMate-images/main/vietnam_converted.jpg");
+	img_url = ifnull(img_map.get(place),"https://raw.githubusercontent.com/K-Mokshagna/TravelMate-images/main/Welcome%20image.jpeg");
+	next_context = "intl_trip_type__" + place;
+	response.put("action","context");
+	response.put("context_id",next_context);
+	question = {"name":"trip_type_intl","replies":{{"type":"image","image":img_url,"text":place + " selected!"},{"text":"Who are you travelling with?"}},"suggestions":{"Family Trip","Couple Trip","Friends Trip","Solo Trip"}};
+	response.put("questions",{question});
+	return response;
+}
+
+// INTERNATIONAL TRIP TYPE SELECTION & MEMBER COUNT
+if(context_id == "intl_trip_type_selection")
+{
+	if(!answers.containsKey("intl_trip_type_pre"))
+	{
+		question = {"name":"intl_trip_type_pre","replies":{"Please select who you are travelling with."},"suggestions":{"Solo Trip","Couple Trip","Family Trip","Friends Trip"}};
+		response.put("action","context");
+		response.put("context_id","intl_trip_type_selection");
+		response.put("questions",{question});
+		return response;
+	}
+	trip_type = answers.get("intl_trip_type_pre").get("text");
+	
+	if(trip_type == "Family Trip" || trip_type == "Friends Trip")
+	{
+		response.put("action","context");
+		response.put("context_id","intl_member_count_pre__" + trip_type);
+		question = {"name":"intl_member_count_pre","replies":{"How many members are traveling? (Enter 1-20)"},"input":{"type":"name","placeholder":"e.g., 4"}};
+		response.put("questions",{question});
+		return response;
+	}
+	else
+	{
+	
+		member_count = 1;
+		if(trip_type == "Couple Trip")
+		{
+			member_count = 2;
+		}
+		
+		response.put("action","context");
+		response.put("context_id","intl_carousel__" + trip_type + "__" + member_count);
+		
+		carousel_data = List();
+		
+		dubai_pkg = Map();
+		dubai_pkg.put("label","Book Now");
+		dubai_pkg.put("name","BookDubai");
+		dubai_pkg.put("type","postback");
+		dubai_pkg.put("payload","BookDubai");
+		
+		dubai = Map();
+		dubai.put("title","Dubai Habibi");
+		dubai.put("subtitle","4N/5D • ₹" + (95000 * member_count) + " total\n\n📍 Burj Khalifa, Desert Safari, Dubai Mall, Palm Jumeirah\n🏨 4★ Downtown Hotel\n🍴 Breakfast included\n👥 " + member_count + " member(s)");
+		dubai.put("id","dubai");
+		dubai.put("image","https://raw.githubusercontent.com/K-Mokshagna/TravelMate-images/main/dubai%20image.jpeg");
+		dubai.put("type","url");
+		dubai.put("link","#");
+		dubai.put("actions",{dubai_pkg});
+		carousel_data.add(dubai);
+		
+		bali_pkg = Map();
+		bali_pkg.put("label","Book Now");
+		bali_pkg.put("name","BookBali");
+		bali_pkg.put("type","postback");
+		bali_pkg.put("payload","BookBali");
+		
+		bali = Map();
+		bali.put("title","Bali Dream");
+		bali.put("subtitle","5N/6D • ₹" + (88000 * member_count) + " total\n\n📍 Ubud Rice Terraces, Tanah Lot Temple, Kuta Beach\n🏨 Pool Villa + Beach Resort\n🍴 Breakfast + Dinner\n👥 " + member_count + " member(s)");
+		bali.put("id","bali");
+		bali.put("image","https://raw.githubusercontent.com/K-Mokshagna/TravelMate-images/main/bali%20image.jpeg");
+		bali.put("type","url");
+		bali.put("link","#");
+		bali.put("actions",{bali_pkg});
+		carousel_data.add(bali);
+		
+		maldives_pkg = Map();
+		maldives_pkg.put("label","Book Now");
+		maldives_pkg.put("name","BookMaldives");
+		maldives_pkg.put("type","postback");
+		maldives_pkg.put("payload","BookMaldives");
+		
+		maldives = Map();
+		maldives.put("title","Ocean Paradise");
+		maldives.put("subtitle","3N/4D • ₹" + (145000 * member_count) + " total\n\n📍 Private Island, Snorkeling, Water Sports, Sunset Cruise\n🏨 Water Villa (All Inclusive)\n🍴 All meals + drinks included\n👥 " + member_count + " member(s)");
+		maldives.put("id","maldives");
+		maldives.put("image","https://raw.githubusercontent.com/K-Mokshagna/TravelMate-images/main/maldives%20image.jpeg");
+		maldives.put("type","url");
+		maldives.put("link","#");
+		maldives.put("actions",{maldives_pkg});
+		carousel_data.add(maldives);
+		
+		singapore_pkg = Map();
+		singapore_pkg.put("label","Book Now");
+		singapore_pkg.put("name","BookSingapore");
+		singapore_pkg.put("type","postback");
+		singapore_pkg.put("payload","BookSingapore");
+		
+		singapore = Map();
+		singapore.put("title","Singapore Skylines");
+		singapore.put("subtitle","4N/5D • ₹" + (82000 * member_count) + " total\n\n📍 Marina Bay, Sentosa Island, Gardens by Bay, Universal Studios\n🏨 3★ City Hotel\n🍴 Breakfast included\n👥 " + member_count + " member(s)");
+		singapore.put("id","singapore");
+		singapore.put("image","https://raw.githubusercontent.com/K-Mokshagna/TravelMate-images/main/singapore%20image_converted.jpg");
+		singapore.put("type","url");
+		singapore.put("link","#");
+		singapore.put("actions",{singapore_pkg});
+		carousel_data.add(singapore);
+		
+		thailand_pkg = Map();
+		thailand_pkg.put("label","Book Now");
+		thailand_pkg.put("name","BookThailand");
+		thailand_pkg.put("type","postback");
+		thailand_pkg.put("payload","BookThailand");
+		
+		thailand = Map();
+		thailand.put("title","Thai Fun");
+		thailand.put("subtitle","5N/6D • ₹" + (75000 * member_count) + " total\n\n📍 Bangkok Grand Palace, Phuket Islands, Phi Phi Island\n🏨 Beach Resort + City Hotel\n🍴 Breakfast + 2 Thai Dinners\n👥 " + member_count + " member(s)");
+		thailand.put("id","thailand");
+		thailand.put("image","https://raw.githubusercontent.com/K-Mokshagna/TravelMate-images/main/thailand%20image_converted.jpg");
+		thailand.put("type","url");
+		thailand.put("link","#");
+		thailand.put("actions",{thailand_pkg});
+		carousel_data.add(thailand);
+
+		vietnam_pkg = Map();
+		vietnam_pkg.put("label","Book Now");
+		vietnam_pkg.put("name","BookVietnam");
+		vietnam_pkg.put("type","postback");
+		vietnam_pkg.put("payload","BookVietnam");
+		
+		vietnam = Map();
+		vietnam.put("title","Vietnam Heritage");
+		vietnam.put("subtitle","5N/6D • ₹" + (78000 * member_count) + " total\n\n📍 Ha Long Bay Cruise, Hanoi Old Quarter, Hoi An Ancient Town\n🏨 Heritage Hotel + Cruise\n🍴 All meals included\n👥 " + member_count + " member(s)");
+		vietnam.put("id","vietnam");
+		vietnam.put("image","https://raw.githubusercontent.com/K-Mokshagna/TravelMate-images/main/vietnam_converted.jpg");
+		vietnam.put("type","url");
+		vietnam.put("link","#");
+		vietnam.put("actions",{vietnam_pkg});
+		carousel_data.add(vietnam);
+		
+		question = Map();
+		question.put("name","intl_carousel_selection");
+		replies_list = List();
+		carousel_reply = Map();
+		carousel_reply.put("type","multiple-product");
+		carousel_reply.put("text","Choose your dream international destination:");
+		carousel_reply.put("elements",carousel_data);
+		replies_list.add(carousel_reply);
+		question.put("replies",replies_list);
+		response.put("questions",{question});
+		return response;
+	}
+}
+
+// INTERNATIONAL MEMBER COUNT
+if(context_id.startsWith("intl_member_count_pre__"))
+{
+	if(!answers.containsKey("intl_member_count_pre"))
+	{
+		question = {"name":"intl_member_count_pre","replies":{"Please enter the number of members."},"input":{"type":"name","placeholder":"e.g., 4"}};
+		response.put("action","context");
+		response.put("context_id",context_id);
+		response.put("questions",{question});
+		return response;
+	}
+	
+	trip_type = context_id.replaceAll("intl_member_count_pre__","");
+	member_text = answers.get("intl_member_count_pre").get("text");
+	
+	try 
+	{
+		member_count = member_text.toNumber();
+		if(member_count < 1 || member_count > 20)
+		{
+			question = {"name":"intl_member_count_pre","replies":{"Please enter a number between 1 and 20."},"input":{"type":"name","placeholder":"e.g., 4"}};
+			response.put("action","context");
+			response.put("context_id",context_id);
+			response.put("questions",{question});
+			return response;
+		}
+	}
+	catch (e)
+	{
+		question = {"name":"intl_member_count_pre","replies":{"Please enter a valid number."},"input":{"type":"name","placeholder":"e.g., 4"}};
+		response.put("action","context");
+		response.put("context_id",context_id);
+		response.put("questions",{question});
+		return response;
+	}
+	
+	response.put("action","context");
+	response.put("context_id","intl_carousel__" + trip_type + "__" + member_count);
+	
+	carousel_data = List();
+	
+	dubai_pkg = Map();
+	dubai_pkg.put("label","Book Now");
+	dubai_pkg.put("name","BookDubai");
+	dubai_pkg.put("type","postback");
+	dubai_pkg.put("payload","BookDubai");
+	
+	dubai = Map();
+	dubai.put("title","Dubai Habibi");
+	dubai.put("subtitle","4N/5D • ₹" + (95000 * member_count) + " total\n\n📍 Burj Khalifa, Desert Safari, Dubai Mall, Palm Jumeirah\n🏨 4★ Downtown Hotel\n🍴 Breakfast included\n👥 " + member_count + " member(s)");
+	dubai.put("id","dubai");
+	dubai.put("image","https://raw.githubusercontent.com/K-Mokshagna/TravelMate-images/main/dubai%20image.jpeg");
+	dubai.put("type","url");
+	dubai.put("link","#");
+	dubai.put("actions",{dubai_pkg});
+	carousel_data.add(dubai);
+	
+	bali_pkg = Map();
+	bali_pkg.put("label","Book Now");
+	bali_pkg.put("name","BookBali");
+	bali_pkg.put("type","postback");
+	bali_pkg.put("payload","BookBali");
+	
+	bali = Map();
+	bali.put("title","Bali Dream");
+	bali.put("subtitle","5N/6D • ₹" + (88000 * member_count) + " total\n\n📍 Ubud Rice Terraces, Tanah Lot Temple, Kuta Beach\n🏨 Pool Villa + Beach Resort\n🍴 Breakfast + Dinner\n👥 " + member_count + " member(s)");
+	bali.put("id","bali");
+	bali.put("image","https://raw.githubusercontent.com/K-Mokshagna/TravelMate-images/main/bali%20image.jpeg");
+	bali.put("type","url");
+	bali.put("link","#");
+	bali.put("actions",{bali_pkg});
+	carousel_data.add(bali);
+	
+	maldives_pkg = Map();
+	maldives_pkg.put("label","Book Now");
+	maldives_pkg.put("name","BookMaldives");
+	maldives_pkg.put("type","postback");
+	maldives_pkg.put("payload","BookMaldives");
+	
+	maldives = Map();
+	maldives.put("title","Ocean Paradise");
+	maldives.put("subtitle","3N/4D • ₹" + (145000 * member_count) + " total\n\n📍 Private Island, Snorkeling, Water Sports, Sunset Cruise\n🏨 Water Villa (All Inclusive)\n🍴 All meals + drinks included\n👥 " + member_count + " member(s)");
+	maldives.put("id","maldives");
+	maldives.put("image","https://raw.githubusercontent.com/K-Mokshagna/TravelMate-images/main/maldives%20image.jpeg");
+	maldives.put("type","url");
+	maldives.put("link","#");
+	maldives.put("actions",{maldives_pkg});
+	carousel_data.add(maldives);
+
+	singapore_pkg = Map();
+	singapore_pkg.put("label","Book Now");
+	singapore_pkg.put("name","BookSingapore");
+	singapore_pkg.put("type","postback");
+	singapore_pkg.put("payload","BookSingapore");
+	
+	singapore = Map();
+	singapore.put("title","Singapore Skylines");
+	singapore.put("subtitle","4N/5D • ₹" + (82000 * member_count) + " total\n\n📍 Marina Bay, Sentosa Island, Gardens by Bay, Universal Studios\n🏨 3★ City Hotel\n🍴 Breakfast included\n👥 " + member_count + " member(s)");
+	singapore.put("id","singapore");
+	singapore.put("image","https://raw.githubusercontent.com/K-Mokshagna/TravelMate-images/main/singapore%20image_converted.jpg");
+	singapore.put("type","url");
+	singapore.put("link","#");
+	singapore.put("actions",{singapore_pkg});
+	carousel_data.add(singapore);
+	
+	thailand_pkg = Map();
+	thailand_pkg.put("label","Book Now");
+	thailand_pkg.put("name","BookThailand");
+	thailand_pkg.put("type","postback");
+	thailand_pkg.put("payload","BookThailand");
+	
+	thailand = Map();
+	thailand.put("title","Thai Fun");
+	thailand.put("subtitle","5N/6D • ₹" + (75000 * member_count) + " total\n\n📍 Bangkok Grand Palace, Phuket Islands, Phi Phi Island\n🏨 Beach Resort + City Hotel\n🍴 Breakfast + 2 Thai Dinners\n👥 " + member_count + " member(s)");
+	thailand.put("id","thailand");
+	thailand.put("image","https://raw.githubusercontent.com/K-Mokshagna/TravelMate-images/main/thailand%20image_converted.jpg");
+	thailand.put("type","url");
+	thailand.put("link","#");
+	thailand.put("actions",{thailand_pkg});
+	carousel_data.add(thailand);
+	
+	// Vietnam Package
+	vietnam_pkg = Map();
+	vietnam_pkg.put("label","Book Now");
+	vietnam_pkg.put("name","BookVietnam");
+	vietnam_pkg.put("type","postback");
+	vietnam_pkg.put("payload","BookVietnam");
+	
+	vietnam = Map();
+	vietnam.put("title","Vietnam Heritage");
+	vietnam.put("subtitle","5N/6D • ₹" + (78000 * member_count) + " total\n\n📍 Ha Long Bay Cruise, Hanoi Old Quarter, Hoi An Ancient Town\n🏨 Heritage Hotel + Cruise\n🍴 All meals included\n👥 " + member_count + " member(s)");
+	vietnam.put("id","vietnam");
+	vietnam.put("image","https://raw.githubusercontent.com/K-Mokshagna/TravelMate-images/main/vietnam_converted.jpg");
+	vietnam.put("type","url");
+	vietnam.put("link","#");
+	vietnam.put("actions",{vietnam_pkg});
+	carousel_data.add(vietnam);
+	
+	question = Map();
+	question.put("name","intl_carousel_selection");
+	replies_list = List();
+	carousel_reply = Map();
+	carousel_reply.put("type","multiple-product");
+	carousel_reply.put("text","Choose your dream international destination:");
+	carousel_reply.put("elements",carousel_data);
+	replies_list.add(carousel_reply);
+	question.put("replies",replies_list);
+	response.put("questions",{question});
+	return response;
+}
+
+//HANDLE INDIA PACKAGE SELECTION FROM CAROUSEL
+if(context_id.startsWith("india_carousel__"))
+{
+
+	selected_action = "";
+	if(answers.containsKey("india_carousel_selection"))
+	{
+
+		selected_action = answers.get("india_carousel_selection").get("name");
+		
+		if(selected_action == null || selected_action == "")
+		{
+			selection_text = answers.get("india_carousel_selection").get("text");
+			
+			if(selection_text.contains("Goa") || selection_text.contains("Sun & Sand")) { selected_action = "BookGoa"; }
+			else if(selection_text.contains("Kerala") || selection_text.contains("Bliss")) { selected_action = "BookKerala"; }
+			else if(selection_text.contains("Kashmir") || selection_text.contains("Heaven")) { selected_action = "BookKashmir"; }
+			else if(selection_text.contains("Manali") || selection_text.contains("Snow")) { selected_action = "BookManali"; }
+			else if(selection_text.contains("Ladakh") || selection_text.contains("Adventure")) { selected_action = "BookLadakh"; }
+			else if(selection_text.contains("Jaipur") || selection_text.contains("Rajasthan")) { selected_action = "BookJaipur"; }
+		}
+	}
+	
+	if(selected_action == "" || selected_action == null)
+	{
+		if(answers.containsKey("BookGoa")) { selected_action = "BookGoa"; }
+		else if(answers.containsKey("BookKerala")) { selected_action = "BookKerala"; }
+		else if(answers.containsKey("BookKashmir")) { selected_action = "BookKashmir"; }
+		else if(answers.containsKey("BookManali")) { selected_action = "BookManali"; }
+		else if(answers.containsKey("BookLadakh")) { selected_action = "BookLadakh"; }
+		else if(answers.containsKey("BookJaipur")) { selected_action = "BookJaipur"; }
+	}
+	
+	if(selected_action == "")
+	{
+		response.put("action","reply");
+		response.put("replies",{"Please select a package from the carousel."});
+		return response;
+	}
+	
+	parts = context_id.replaceAll("india_carousel__","").toList("__");
+	trip_type = parts.get(0);
+	member_count = parts.get(1).toNumber();
+	
+	place = "";
+	pkg_title = "";
+	pkg_image = "";
+	pkg_duration = "";
+	pkg_sightseeing = "";
+	pkg_stay = "";
+	pkg_meals = "";
+	base_price = 0;
+	
+	if(selected_action == "BookGoa")
+	{
+		place = "Goa";
+		pkg_title = "Goa Sun & Sand";
+		pkg_duration = "3N/4D";
+		pkg_sightseeing = "North Goa Beaches, Fort Aguada, Sunset Cruise";
+		pkg_stay = "3★ Beach Resort (Breakfast)";
+		pkg_meals = "2 Meals/day included";
+		base_price = 24999;
+		pkg_image = "https://raw.githubusercontent.com/K-Mokshagna/TravelMate-images/main/goa%20image.jpeg";
+	}
+	else if(selected_action == "BookKerala")
+	{
+		place = "Kerala";
+		pkg_title = "Kerala Bliss";
+		pkg_duration = "4N/5D";
+		pkg_sightseeing = "Munnar Hills, Alleppey Houseboat, Tea Gardens";
+		pkg_stay = "Hill Resort + Houseboat";
+		pkg_meals = "All meals included";
+		base_price = 31999;
+		pkg_image = "https://raw.githubusercontent.com/K-Mokshagna/TravelMate-images/main/kerala%20image.jpeg";
+	}
+	else if(selected_action == "BookKashmir")
+	{
+		place = "Kashmir";
+		pkg_title = "Heaven on Earth";
+		pkg_duration = "4N/5D";
+		pkg_sightseeing = "Dal Lake, Gulmarg, Pahalgam, Srinagar";
+		pkg_stay = "Houseboat + 3★ Hotel";
+		pkg_meals = "Breakfast & Dinner";
+		base_price = 34999;
+		pkg_image = "https://raw.githubusercontent.com/K-Mokshagna/TravelMate-images/main/kashmir%20image.jpeg";
+	}
+	else if(selected_action == "BookManali")
+	{
+		place = "Manali";
+		pkg_title = "Snow Retreat";
+		pkg_duration = "3N/4D";
+		pkg_sightseeing = "Solang Valley, Rohtang Pass, Atal Tunnel";
+		pkg_stay = "Mountain View Hotel";
+		pkg_meals = "Breakfast included";
+		base_price = 19999;
+		pkg_image = "https://raw.githubusercontent.com/K-Mokshagna/TravelMate-images/main/manali%20image.jpeg";
+	}
+	else if(selected_action == "BookLadakh")
+	{
+		place = "Ladakh";
+		pkg_title = "Ladakh Adventure";
+		pkg_duration = "5N/6D";
+		pkg_sightseeing = "Leh, Pangong Lake, Nubra Valley, Khardung La";
+		pkg_stay = "Luxury Camps + Hotel";
+		pkg_meals = "All meals included";
+		base_price = 45999;
+		pkg_image = "https://raw.githubusercontent.com/K-Mokshagna/TravelMate-images/main/ladakh%20image.jpeg";
+	}
+	else if(selected_action == "BookJaipur")
+	{
+		place = "Jaipur";
+		pkg_title = "Royal Rajasthan";
+		pkg_duration = "3N/4D";
+		pkg_sightseeing = "Amber Fort, City Palace, Hawa Mahal, Jantar Mantar";
+		pkg_stay = "Heritage Haveli";
+		pkg_meals = "Breakfast + 1 Royal Dinner";
+		base_price = 22999;
+		pkg_image = "https://raw.githubusercontent.com/K-Mokshagna/TravelMate-images/main/jaipur%20image.jpeg";
+	}
+	
+	final_price = base_price * member_count;
+	pkg_details = pkg_duration + " • ₹" + final_price + " total\n\n📍 " + pkg_sightseeing + "\n🏨 " + pkg_stay + "\n🍴 " + pkg_meals + "\n👥 " + member_count + " member(s)";
+	
+	next_context = "post_pricing__INDIA__" + place + "__" + trip_type + "__" + final_price + "__" + member_count;
+	response.put("action","context");
+	response.put("context_id",next_context);
+	
+	question = {"name":"post_price_confirmation","replies":{{"type":"image","image":pkg_image,"text":pkg_title},{"text":pkg_details},{"text":"Would you like to proceed with booking?"}},"suggestions":{"Continue Booking","Cancel"}};
+	response.put("questions",{question});
+	return response;
+}
+
+//HANDLE INTERNATIONAL PACKAGE SELECTION FROM CAROUSEL
+if(context_id.startsWith("intl_carousel__"))
+{
+	
+	selected_action = "";
+	if(answers.containsKey("intl_carousel_selection"))
+	{
+		
+		selected_action = answers.get("intl_carousel_selection").get("name");
+		
+		if(selected_action == null || selected_action == "")
+		{
+			selection_text = answers.get("intl_carousel_selection").get("text");
+			
+			if(selection_text.contains("Dubai") || selection_text.contains("Habibi")) { selected_action = "BookDubai"; }
+			else if(selection_text.contains("Bali") || selection_text.contains("Dream")) { selected_action = "BookBali"; }
+			else if(selection_text.contains("Maldives") || selection_text.contains("Ocean Paradise")) { selected_action = "BookMaldives"; }
+			else if(selection_text.contains("Singapore") || selection_text.contains("Skylines")) { selected_action = "BookSingapore"; }
+			else if(selection_text.contains("Thailand") || selection_text.contains("Thai")) { selected_action = "BookThailand"; }
+			else if(selection_text.contains("Vietnam") || selection_text.contains("Heritage")) { selected_action = "BookVietnam"; }
+		}
+	}
+
+	if(selected_action == "" || selected_action == null)
+	{
+		if(answers.containsKey("BookDubai")) { selected_action = "BookDubai"; }
+		else if(answers.containsKey("BookBali")) { selected_action = "BookBali"; }
+		else if(answers.containsKey("BookMaldives")) { selected_action = "BookMaldives"; }
+		else if(answers.containsKey("BookSingapore")) { selected_action = "BookSingapore"; }
+		else if(answers.containsKey("BookThailand")) { selected_action = "BookThailand"; }
+		else if(answers.containsKey("BookVietnam")) { selected_action = "BookVietnam"; }
+	}
+	
+	if(selected_action == "")
+	{
+		response.put("action","reply");
+		response.put("replies",{"Please select a package from the carousel."});
+		return response;
+	}
+	
+	parts = context_id.replaceAll("intl_carousel__","").toList("__");
+	trip_type = parts.get(0);
+	member_count = parts.get(1).toNumber();
+	
+	place = "";
+	pkg_title = "";
+	pkg_image = "";
+	pkg_duration = "";
+	pkg_sightseeing = "";
+	pkg_stay = "";
+	pkg_meals = "";
+	base_price = 0;
+	
+	if(selected_action == "BookDubai")
+	{
+		place = "Dubai";
+		pkg_title = "Dubai Habibi";
+		pkg_duration = "4N/5D";
+		pkg_sightseeing = "Burj Khalifa, Desert Safari, Dubai Mall, Palm Jumeirah";
+		pkg_stay = "4★ Downtown Hotel";
+		pkg_meals = "Breakfast included";
+		base_price = 95000;
+		pkg_image = "https://raw.githubusercontent.com/K-Mokshagna/TravelMate-images/main/dubai%20image.jpeg";
+	}
+	else if(selected_action == "BookBali")
+	{
+		place = "Bali";
+		pkg_title = "Bali Dream";
+		pkg_duration = "5N/6D";
+		pkg_sightseeing = "Ubud Rice Terraces, Tanah Lot Temple, Kuta Beach";
+		pkg_stay = "Pool Villa + Beach Resort";
+		pkg_meals = "Breakfast + Dinner";
+		base_price = 88000;
+		pkg_image = "https://raw.githubusercontent.com/K-Mokshagna/TravelMate-images/main/bali%20image.jpeg";
+	}
+	else if(selected_action == "BookMaldives")
+	{
+		place = "Maldives";
+		pkg_title = "Ocean Paradise";
+		pkg_duration = "3N/4D";
+		pkg_sightseeing = "Private Island, Snorkeling, Water Sports, Sunset Cruise";
+		pkg_stay = "Water Villa (All Inclusive)";
+		pkg_meals = "All meals + drinks included";
+		base_price = 145000;
+		pkg_image = "https://raw.githubusercontent.com/K-Mokshagna/TravelMate-images/main/maldives%20image.jpeg";
+	}
+	else if(selected_action == "BookSingapore")
+	{
+		place = "Singapore";
+		pkg_title = "Singapore Skylines";
+		pkg_duration = "4N/5D";
+		pkg_sightseeing = "Marina Bay, Sentosa Island, Gardens by Bay, Universal Studios";
+		pkg_stay = "3★ City Hotel";
+		pkg_meals = "Breakfast included";
+		base_price = 82000;
+		pkg_image = "https://raw.githubusercontent.com/K-Mokshagna/TravelMate-images/main/singapore%20image_converted.jpg";
+	}
+	else if(selected_action == "BookThailand")
+	{
+		place = "Thailand";
+		pkg_title = "Thai Fun";
+		pkg_duration = "5N/6D";
+		pkg_sightseeing = "Bangkok Grand Palace, Phuket Islands, Phi Phi Island";
+		pkg_stay = "Beach Resort + City Hotel";
+		pkg_meals = "Breakfast + 2 Thai Dinners";
+		base_price = 75000;
+		pkg_image = "https://raw.githubusercontent.com/K-Mokshagna/TravelMate-images/main/thailand%20image_converted.jpg";
+	}
+	else if(selected_action == "BookVietnam")
+	{
+		place = "Vietnam";
+		pkg_title = "Vietnam Heritage";
+		pkg_duration = "5N/6D";
+		pkg_sightseeing = "Ha Long Bay Cruise, Hanoi Old Quarter, Hoi An Ancient Town";
+		pkg_stay = "Heritage Hotel + Cruise";
+		pkg_meals = "All meals included";
+		base_price = 78000;
+		pkg_image = "https://raw.githubusercontent.com/K-Mokshagna/TravelMate-images/main/vietnam_converted.jpg";
+	}
+	
+	final_price = base_price * member_count;
+	pkg_details = pkg_duration + " • ₹" + final_price + " total\n\n📍 " + pkg_sightseeing + "\n🏨 " + pkg_stay + "\n🍴 " + pkg_meals + "\n👥 " + member_count + " member(s)";
+	
+	next_context = "post_pricing__INTL__" + place + "__" + trip_type + "__" + final_price + "__" + member_count;
+	response.put("action","context");
+	response.put("context_id",next_context);
+	
+	question = {"name":"post_price_confirmation","replies":{{"type":"image","image":pkg_image,"text":pkg_title},{"text":pkg_details},{"text":"Would you like to proceed with booking?"}},"suggestions":{"Continue Booking","Cancel"}};
+	response.put("questions",{question});
+	return response;
+}
+
+//CONFIRMATION & DETAILS COLLECTION
+if(context_id.startsWith("post_pricing"))
+{
+	if(!answers.containsKey("post_price_confirmation"))
+	{
+		question = {"name":"post_price_confirmation","replies":{"Please use the buttons."},"suggestions":{"Continue Booking","Cancel"}};
+		response.put("action","context");
+		response.put("context_id",context_id);
+		response.put("questions",{question});
+		return response;
+	}
+	choice = answers.get("post_price_confirmation").get("text");
+	if(choice == "Continue Booking")
+	{
+		response.put("action","context");
+		response.put("context_id","collect_name__" + context_id);
+		question = {"name":"user_name","replies":{"Great decision! 🥳 Please enter your Full Name."},"input":{"type":"name","placeholder":"Your Name"}};
+		response.put("questions",{question});
+		return response;
+	}
+	else
+	{
+		response.put("action","context");
+		response.put("context_id","cancellation_options");
+		question = {"name":"cancel_decision","replies":{"No worries! Hope to see you again soon! 👋\n\nWhat would you like to do next?"},"suggestions":{"Restart","End chat"}};
+		response.put("questions",{question});
+		return response;
+	}
+}
+
+//CANCELLATION OPTIONS
+if(context_id == "cancellation_options")
+{
+	if(!answers.containsKey("cancel_decision"))
+	{
+		question = {"name":"cancel_decision","replies":{"Please select an option."},"suggestions":{"Restart","End chat"}};
+		response.put("action","context");
+		response.put("context_id","cancellation_options");
+		response.put("questions",{question});
+		return response;
+	}
+	decision = answers.get("cancel_decision").get("text");
+	if(decision == "Restart")
+	{
+		question = {"name":"journey_type","replies":{"How would you like to plan your trip?\nChoose 'Explore Destinations' for fixed tour packages.\nChoose 'Plan an Itinerary' for custom tour package selection."},"suggestions":{"Explore Destinations","Plan an Itinerary"}};
+		response.put("action","context");
+		response.put("context_id","journey_type_selection");
+		response.put("questions",{question});
+		return response;
+	}
+	else
+	{
+		response.put("action","reply");
+		response.put("replies",{"Thank you for visiting TravelMate! Have a great day! 🌍✈️"});
+		return response;
+	}
+}
+//COLLECT NAME
+if(context_id.startsWith("collect_name"))
+{
+	if(!answers.containsKey("user_name"))
+	{
+		question = {"name":"user_name","replies":{"Please enter your Full Name."},"input":{"type":"name","placeholder":"Your Name"}};
+		response.put("action","context");
+		response.put("context_id",context_id);
+		response.put("questions",{question});
+		return response;
+	}
+	user_name = answers.get("user_name").get("text");
+	response.put("action","context");
+	response.put("context_id","collect_email__" + context_id + "||NAME:" + user_name);
+	question = {"name":"user_email","replies":{"Please enter your Email ID for booking confirmation."},"input":{"type":"email","placeholder":"Your Email"}};
+	response.put("questions",{question});
+	return response;
+}
+//COLLECT EMAIL 
+if(context_id.startsWith("collect_email"))
+{
+	if(!answers.containsKey("user_email"))
+	{
+		question = {"name":"user_email","replies":{"Please enter your Email ID for booking confirmation."},"input":{"type":"email","placeholder":"Your Email"}};
+		response.put("action","context");
+		response.put("context_id",context_id);
+		response.put("questions",{question});
+		return response;
+	}
+	user_email = answers.get("user_email").get("text");
+	otp_code = randomNumber(100000,999999).toString();
+	try 
+	{
+		sendgrid_api_key = "<SENDGRID_API_KEY>";
+		payload = Map();
+		personalizations = List();
+		person = Map();
+		to_list = List();
+		to_map = Map();
+		to_map.put("email",user_email);
+		to_list.add(to_map);
+		person.put("to",to_list);
+		personalizations.add(person);
+		payload.put("personalizations",personalizations);
+		from_map = Map();
+		from_map.put("email","travelmate003004@gmail.com");
+		from_map.put("name","TravelMate");
+		payload.put("from",from_map);
+		payload.put("subject","TravelMate - Email Verification OTP");
+		content_list = List();
+		content_map = Map();
+		content_map.put("type","text/html");
+		content_map.put("value","<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 2px solid #0066cc; border-radius: 10px;'><div style='text-align: center; margin-bottom: 20px;'><h1 style='color: #0066cc; margin: 0;'>🧳 TravelMate</h1></div><div style='background: #f5f5f5; padding: 20px; border-radius: 8px; margin-bottom: 20px;'><h2 style='color: #333; margin-top: 0;'>Email Verification</h2><p style='font-size: 16px; color: #666;'>Your One-Time Password (OTP) for email verification is:</p><div style='background: white; padding: 15px; text-align: center; border-radius: 5px; margin: 20px 0;'><span style='font-size: 32px; font-weight: bold; color: #0066cc; letter-spacing: 5px;'>" + otp_code + "</span></div><p style='font-size: 14px; color: #999;'>⏱️ This OTP is valid for 10 minutes</p></div><div style='font-size: 12px; color: #999; text-align: center;'><p>If you didn't request this OTP, please ignore this email.</p><p style='margin-top: 15px;'>Happy Travels! ✈️<br><strong>Team TravelMate</strong></p></div></div>");
+		content_list.add(content_map);
+		payload.put("content",content_list);
+		email_response = invokeurl
+		[
+			url :"https://api.sendgrid.com/v3/mail/send"
+			type :POST
+			parameters:payload.toString()
+			headers:{"Authorization":"Bearer " + sendgrid_api_key,"Content-Type":"application/json"}
+		];
+		response.put("action","context");
+		response.put("context_id","verify_email_otp__" + otp_code + "__" + user_email + "__" + context_id);
+		question = Map();
+		question.put("name","email_otp");
+		replies_list = List();
+		reply1 = Map();
+		reply1.put("text","✅ An OTP has been sent to " + user_email + "\n\nPlease check your inbox (and spam folder) and enter the 6-digit code below.\n\n💡 Didn't receive? Type 'Retry Email'");
+		replies_list.add(reply1);
+		question.put("replies",replies_list);
+		input_map = Map();
+		input_map.put("type","name");
+		input_map.put("placeholder","Enter 6-digit OTP");
+		question.put("input",input_map);
+		question.put("suggestions",{"Retry Email"});
+		response.put("questions",{question});
+		return response;
+	}
+	catch (e)
+	{
+		info "SendGrid Email Send Error: " + e;
+		question = {"name":"user_email","replies":{"❌ Failed to send OTP to " + user_email + "\n\nPlease check:\n✓ Email is correct\n✓ No typos\n\nTry entering your email again."},"input":{"type":"email","placeholder":"Your Email"}};
+		response.put("action","context");
+		response.put("context_id",context_id);
+		response.put("questions",{question});
+		return response;
+	}
+}
+//VERIFY EMAIL OTP
+if(context_id.startsWith("verify_email_otp__"))
+{
+	if(!answers.containsKey("email_otp"))
+	{
+		question = {"name":"email_otp","replies":{"Please enter the OTP sent to your email.\n\n💡 Didn't receive? Type 'Retry Email'"},"input":{"type":"name","placeholder":"Enter 6-digit OTP"},"suggestions":{"Retry Email"}};
+		response.put("action","context");
+		response.put("context_id",context_id);
+		response.put("questions",{question});
+		return response;
+	}
+	entered_otp = answers.get("email_otp").get("text").trim();
+	parts = context_id.toList("__");
+	stored_otp = parts.get(1);
+	user_email = parts.get(2);
+	if(entered_otp == "Retry Email")
+	{
+		base_context_start = context_id.indexOf("__",context_id.indexOf("__") + 2);
+		base_context_start = context_id.indexOf("__",base_context_start + 1);
+		base_context = context_id.subString(base_context_start + 2);
+		new_otp_code = randomNumber(100000,999999).toString();
+		try 
+		{
+			sendgrid_api_key = "<SENDGRID_API_KEY>";
+			payload = Map();
+			personalizations = List();
+			person = Map();
+			to_list = List();
+			to_map = Map();
+			to_map.put("email",user_email);
+			to_list.add(to_map);
+			person.put("to",to_list);
+			personalizations.add(person);
+			payload.put("personalizations",personalizations);
+			from_map = Map();
+			from_map.put("email","travelmate003004@gmail.com");
+			from_map.put("name","TravelMate");
+			payload.put("from",from_map);
+			payload.put("subject","TravelMate - New Email Verification OTP");
+			content_list = List();
+			content_map = Map();
+			content_map.put("type","text/html");
+			content_map.put("value","<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 2px solid #0066cc; border-radius: 10px;'><div style='text-align: center; margin-bottom: 20px;'><h1 style='color: #0066cc; margin: 0;'>🧳 TravelMate</h1></div><div style='background: #f5f5f5; padding: 20px; border-radius: 8px; margin-bottom: 20px;'><h2 style='color: #333; margin-top: 0;'>New Email Verification OTP</h2><p style='font-size: 16px; color: #666;'>Your new One-Time Password (OTP) is:</p><div style='background: white; padding: 15px; text-align: center; border-radius: 5px; margin: 20px 0;'><span style='font-size: 32px; font-weight: bold; color: #0066cc; letter-spacing: 5px;'>" + new_otp_code + "</span></div><p style='font-size: 14px; color: #999;'>⏱️ This OTP is valid for 10 minutes</p></div><div style='font-size: 12px; color: #999; text-align: center;'><p>Your previous OTP has been invalidated.</p><p style='margin-top: 15px;'>Happy Travels! ✈️<br><strong>Team TravelMate</strong></p></div></div>");
+			content_list.add(content_map);
+			payload.put("content",content_list);
+			email_response = invokeurl
+			[
+				url :"https://api.sendgrid.com/v3/mail/send"
+				type :POST
+				parameters:payload.toString()
+				headers:{"Authorization":"Bearer " + sendgrid_api_key,"Content-Type":"application/json"}
+			];
+			next_context = "verify_email_otp__" + new_otp_code + "__" + user_email + "__" + base_context;
+			question = Map();
+			question.put("name","email_otp");
+			replies_list = List();
+			reply1 = Map();
+			reply1.put("text","✅ A new OTP has been sent to " + user_email + "\n\nPlease check your inbox and enter the new 6-digit code.");
+			replies_list.add(reply1);
+			question.put("replies",replies_list);
+			input_map = Map();
+			input_map.put("type","name");
+			input_map.put("placeholder","Enter new 6-digit OTP");
+			question.put("input",input_map);
+			question.put("suggestions",{"Retry Email"});
+			response.put("action","context");
+			response.put("context_id",next_context);
+			response.put("questions",{question});
+			return response;
+		}
+		catch (e)
+		{
+			info "Retry Email Error: " + e;
+			question = {"name":"email_otp","replies":{"❌ Failed to resend OTP.\n\nPlease wait a moment and type 'Retry Email' again."},"input":{"type":"name","placeholder":"Enter OTP"},"suggestions":{"Retry Email"}};
+			response.put("action","context");
+			response.put("context_id",context_id);
+			response.put("questions",{question});
+			return response;
+		}
+	}
+	if(entered_otp == stored_otp)
+	{
+		response.put("action","context");
+		response.put("context_id","collect_phone__" + context_id + "||EMAIL:" + user_email);
+		question = {"name":"user_phone","replies":{"✅ Email Verified Successfully!\n\n📱 Please enter your Phone Number for SMS verification."},"input":{"type":"tel","placeholder":"Your Phone Number"}};
+		response.put("questions",{question});
+		return response;
+	}
+	else
+	{
+		question = {"name":"email_otp","replies":{"❌ Incorrect OTP!\n\nPlease check the OTP in your email and try again.\n\n💡 Need a new code? Type 'Retry Email'"},"input":{"type":"name","placeholder":"Enter correct OTP"},"suggestions":{"Retry Email"}};
+		response.put("action","context");
+		response.put("context_id",context_id);
+		response.put("questions",{question});
+		return response;
+	}
+}
+//COLLECT PHONE & SEND OTP
+if(context_id.startsWith("collect_phone"))
+{
+	if(!answers.containsKey("user_phone"))
+	{
+		question = {"name":"user_phone","replies":{"Please enter your Phone Number."},"input":{"type":"tel","placeholder":"Your Phone"}};
+		response.put("action","context");
+		response.put("context_id",context_id);
+		response.put("questions",{question});
+		return response;
+	}
+	phone_val = answers.get("user_phone").get("text").replaceAll(" ","").replaceAll("-","");
+	user_name = "N/A";
+	user_email = "N/A";
+	if(context_id.contains("NAME:"))
+	{
+		name_start = context_id.indexOf("NAME:") + 5;
+		name_end = context_id.indexOf("||",name_start);
+		if(name_end == -1)
+		{
+			name_end = context_id.length();
+		}
+		user_name = context_id.subString(name_start,name_end);
+	}
+	if(context_id.contains("EMAIL:"))
+	{
+		email_start = context_id.indexOf("EMAIL:") + 6;
+		email_end = context_id.indexOf("||",email_start);
+		if(email_end == -1)
+		{
+			email_end = context_id.length();
+		}
+		user_email = context_id.subString(email_start,email_end);
+	}
+	api_key = "14b328bc-cdb1-11f0-a6b2-0200cd936042";
+	try 
+	{
+		otp_resp = invokeurl
+		[
+			url :"https://2factor.in/API/V1/" + api_key + "/SMS/" + phone_val + "/AUTOGEN"
+			type :GET
+		];
+		if(otp_resp.get("Status") == "Success")
+		{
+			session_id = otp_resp.get("Details");
+			next_context = "verify_otp__" + session_id + "__" + phone_val + "__" + context_id + "||PHONE:" + phone_val;
+			question = Map();
+			question.put("name","user_otp");
+			replies_list = List();
+			reply1 = Map();
+			reply1.put("text","An OTP has been sent to your phone through voice call. Please enter it below. To try again, type 'Retry' in the below Enter OTP box.");
+			replies_list.add(reply1);
+			question.put("replies",replies_list);
+			input_map = Map();
+			input_map.put("type","name");
+			input_map.put("placeholder","Enter OTP");
+			question.put("input",input_map);
+			question.put("suggestions",{"Retry"});
+			response.put("action","context");
+			response.put("context_id",next_context);
+			response.put("questions",{question});
+			return response;
+		}
+		else
+		{
+			question = {"name":"user_phone","replies":{"That phone number seems invalid. Please try entering it again."},"input":{"type":"tel","placeholder":"Your Phone"}};
+			response.put("action","context");
+			response.put("context_id",context_id);
+			response.put("questions",{question});
+			return response;
+		}
+	}
+	catch (e)
+	{
+		question = {"name":"user_phone","replies":{"System error sending OTP. Please re-enter your number."},"input":{"type":"tel","placeholder":"Your Phone"}};
+		response.put("action","context");
+		response.put("context_id",context_id);
+		response.put("questions",{question});
+		return response;
+	}
+}
+//VERIFY OTP
+if(context_id.startsWith("verify_otp__"))
+{
+	if(!answers.containsKey("user_otp"))
+	{
+		question = {"name":"user_otp","replies":{"Please enter the OTP sent to your phone through voice call. To try again, type 'Retry' in the below Enter OTP box."},"input":{"type":"name","placeholder":"Enter OTP"},"suggestions":{"Retry"}};
+		response.put("action","context");
+		response.put("context_id",context_id);
+		response.put("questions",{question});
+		return response;
+	}
+	entered_otp = answers.get("user_otp").get("text");
+	parts = context_id.toList("__");
+	phone_val = parts.get(2);
+	if(entered_otp == "Retry")
+	{
+		base_context_start = context_id.indexOf("__",context_id.indexOf("__") + 2);
+		base_context_start = context_id.indexOf("__",base_context_start + 1);
+		base_context = context_id.subString(base_context_start + 2);
+		api_key = "14b328bc-cdb1-11f0-a6b2-0200cd936042";
+		try 
+		{
+			otp_resp = invokeurl
+			[
+				url :"https://2factor.in/API/V1/" + api_key + "/SMS/" + phone_val + "/AUTOGEN"
+				type :GET
+			];
+			if(otp_resp.get("Status") == "Success")
+			{
+				session_id = otp_resp.get("Details");
+				next_context = "verify_otp__" + session_id + "__" + phone_val + "__" + base_context;
+				question = Map();
+				question.put("name","user_otp");
+				replies_list = List();
+				reply1 = Map();
+				reply1.put("text","A new OTP has been sent to your phone through voice call. Please enter it below. To try again, type 'Retry' in the below Enter OTP box.");
+				replies_list.add(reply1);
+				question.put("replies",replies_list);
+				input_map = Map();
+				input_map.put("type","name");
+				input_map.put("placeholder","Enter OTP");
+				question.put("input",input_map);
+				question.put("suggestions",{"Retry"});
+				response.put("action","context");
+				response.put("context_id",next_context);
+				response.put("questions",{question});
+				return response;
+			}
+			else
+			{
+				question = {"name":"user_otp","replies":{"Failed to send new OTP. Please try again or type 'Retry'."},"input":{"type":"name","placeholder":"Enter OTP"},"suggestions":{"Retry"}};
+				response.put("action","context");
+				response.put("context_id",context_id);
+				response.put("questions",{question});
+				return response;
+			}
+		}
+		catch (e)
+		{
+			question = {"name":"user_otp","replies":{"System error sending new OTP. Please type 'Retry' to try again."},"input":{"type":"name","placeholder":"Enter OTP"},"suggestions":{"Retry"}};
+			response.put("action","context");
+			response.put("context_id",context_id);
+			response.put("questions",{question});
+			return response;
+		}
+	}
+	session_id = parts.get(1);
+	api_key = "14b328bc-cdb1-11f0-a6b2-0200cd936042";
+	try 
+	{
+		verify_resp = invokeurl
+		[
+			url :"https://2factor.in/API/V1/" + api_key + "/SMS/VERIFY/" + session_id + "/" + entered_otp
+			type :GET
+		];
+		if(verify_resp.get("Status") == "Success")
+		{
+			response.put("action","context");
+			response.put("context_id","collect_travel_date__" + context_id);
+			travel_date_widget = {"type":"calendar","time":"false","tz":"true","label":"Select Travel Date","select_label":"Confirm"};
+			question = {"name":"travel_date","replies":{"OTP Verified Successfully! ✅"},"input":travel_date_widget};
+			response.put("questions",{question});
+			return response;
+		}
+		else
+		{
+			question = {"name":"user_otp","replies":{"Incorrect OTP ❌. Please enter the correct code or to try again type 'Retry' in the below Enter OTP box."},"input":{"type":"name","placeholder":"Enter OTP"},"suggestions":{"Retry"}};
+			response.put("action","context");
+			response.put("context_id",context_id);
+			response.put("questions",{question});
+			return response;
+		}
+	}
+	catch (e)
+	{
+		question = {"name":"user_otp","replies":{"Error verifying OTP. To try again, type 'Retry' in the below Enter OTP box."},"input":{"type":"name","placeholder":"Enter OTP"},"suggestions":{"Retry"}};
+		response.put("action","context");
+		response.put("context_id",context_id);
+		response.put("questions",{question});
+		return response;
+	}
+}
+//COLLECT TRAVEL DATE
+if(context_id.startsWith("collect_travel_date"))
+{
+	if(!answers.containsKey("travel_date"))
+	{
+		response.put("action","context");
+		response.put("context_id",context_id);
+		travel_date_widget = {"type":"calendar","time":"false","tz":"true","label":"Select Travel Date","select_label":"Confirm"};
+		question = {"name":"travel_date","replies":{"OTP Verified Successfully! ✅"},"input":travel_date_widget};
+		response.put("questions",{question});
+		return response;
+	}
+	travel_date_input = answers.get("travel_date").get("text");
+	try 
+	{
+		selected_date = travel_date_input.toDate();
+		today = zoho.currenttime.toString("dd-MM-yyyy","Asia/Kolkata").toDate("dd-MM-yyyy");
+		tomorrow = today.addDay(1);
+		days_diff = today.daysBetween(selected_date);
+		if(days_diff <= 0)
+		{
+			travel_date_widget = {"type":"calendar","time":"false","tz":"true","label":"Pick Future Date","select_label":"Confirm"};
+			question = {"name":"travel_date","replies":{"❌ Please select tomorrow or later"},"input":travel_date_widget};
+			response.put("action","context");
+			response.put("context_id",context_id);
+			response.put("questions",{question});
+			return response;
+		}
+		travel_date = selected_date.toString("dd-MM-yyyy");
+
+		is_custom_flow = context_id.contains("post_pricing__CUSTOM__");
+
+		if(is_custom_flow)
+		{
+			user_name = "N/A";
+			user_email = "N/A";
+			user_phone = "N/A";
+			num_travelers = "N/A";
+			destination = "N/A";
+			current_location = "N/A";
+			transport_mode = "N/A";
+			if(context_id.contains("NAME:"))
+			{
+				name_start = context_id.indexOf("NAME:") + 5;
+				name_end = context_id.indexOf("||",name_start);
+				if(name_end == -1)
+				{
+					name_end = context_id.length();
+				}
+				user_name = context_id.subString(name_start,name_end);
+			}
+			if(context_id.contains("EMAIL:"))
+			{
+				email_start = context_id.indexOf("EMAIL:") + 6;
+				email_end = context_id.indexOf("||",email_start);
+				if(email_end == -1)
+				{
+					email_end = context_id.length();
+				}
+				user_email = context_id.subString(email_start,email_end);
+			}
+			if(context_id.contains("PHONE:"))
+			{
+				phone_start = context_id.indexOf("PHONE:") + 6;
+				phone_end = context_id.indexOf("||",phone_start);
+				if(phone_end == -1)
+				{
+					phone_end = context_id.length();
+				}
+				user_phone = context_id.subString(phone_start,phone_end);
+			}
+
+			if(context_id.contains("post_pricing__CUSTOM__"))
+			{
+				custom_start = context_id.indexOf("post_pricing__CUSTOM__") + 22;
+				custom_end = context_id.indexOf("||NAME",custom_start);
+				if(custom_end == -1)
+				{
+					custom_end = context_id.length();
+				}
+				custom_part = context_id.subString(custom_start,custom_end);
+				parts = custom_part.toList("__");
+				if(parts.size() >= 5)
+				{
+					destination = parts.get(0);
+					num_travelers = parts.get(3);
+					current_location = parts.get(4);
+					if(parts.size() >= 6)
+					{
+						transport_mode = parts.get(5);
+					}
+				}
+			}
+
+			itinerary_id = "TMIT" + zoho.currenttime.toString("yyyyMMddHHmmss");
+
+			transport_display = "";
+			if(transport_mode == "PublicTransport")
+			{
+				transport_display = "Public Transport (Train/Bus)";
+			}
+			else if(transport_mode == "PrivateTransport")
+			{
+				transport_display = "Private Transport (Car/Taxi)";
+			}
+			else
+			{
+				transport_display = transport_mode;
+			}
+
+			groq_api_key = "<GROQ_API_KEY>";
+			ai_itinerary = "";
+			if(transport_mode == "PublicTransport")
+			{
+				transport_prompt = "Create a detailed 5-day travel itinerary from " + current_location + " to " + destination + " for " + num_travelers + " travelers using public transport. Include:\n1. Day-by-day activities\n2. Transport details (trains/buses/flights)\n3. Estimated budget range in INR\n4. Top attractions for each day\nKeep response under 400 words.";
+			}
+			else
+			{
+				transport_prompt = "Create a detailed 5-day travel itinerary from " + current_location + " to " + destination + " for " + num_travelers + " travelers using private transport (car/taxi). Include:\n1. Day-by-day activities\n2. Route details and driving distances\n3. Estimated budget range in INR\n4. Top attractions for each day\nKeep response under 400 words.";
+			}
+			try 
+			{
+				groq_payload = Map();
+				groq_payload.put("model","llama-3.1-8b-instant");
+				messages_list = List();
+				message_map = Map();
+				message_map.put("role","user");
+				message_map.put("content",transport_prompt);
+				messages_list.add(message_map);
+				groq_payload.put("messages",messages_list);
+				groq_payload.put("max_tokens",600);
+				groq_payload.put("temperature",0.7);
+				groq_response = invokeurl
+				[
+					url :"https://api.groq.com/openai/v1/chat/completions"
+					type :POST
+					parameters:groq_payload.toString()
+					headers:{"Authorization":"Bearer " + groq_api_key,"Content-Type":"application/json"}
+				];
+				if(groq_response.containsKey("choices") && groq_response.get("choices").size() > 0)
+				{
+					choice = groq_response.get("choices").get(0);
+					if(choice.containsKey("message") && choice.get("message").containsKey("content"))
+					{
+						ai_itinerary = choice.get("message").get("content");
+						info "AI Itinerary Generated: " + ai_itinerary;
+					}
+				}
+				if(ai_itinerary == "")
+				{
+					ai_itinerary = "Our travel experts will create a comprehensive itinerary tailored to your needs, including daily activities, accommodations, and transport arrangements.";
+				}
+			}
+			catch (e)
+			{
+				info "Groq API Error: " + e;
+				ai_itinerary = "Our travel experts will create a comprehensive itinerary tailored to your needs, including daily activities, accommodations, and transport arrangements.";
+			}
+		
+			ai_itinerary_html = ai_itinerary.replaceAll("\n","<br>");
+
+			try 
+			{
+				sendgrid_api_key = "<SENDGRID_API_KEY>";
+				html_content = "<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f5f5f5;'>" + "<div style='background: linear-gradient(135deg, #0066cc 0%, #004a99 100%); padding: 30px 20px; text-align: center;'>" + "<div style='display: inline-block; margin-bottom: 10px;'>🧳</div>" + "<h1 style='color: white; margin: 0; font-size: 28px;'>TravelMate</h1>" + "<p style='color: #e0e0e0; margin: 5px 0 0 0; font-size: 14px;'>Your Custom Itinerary</p>" + "</div>" + "<div style='background: #4CAF50; padding: 15px; text-align: center;'>" + "<h2 style='color: white; margin: 0; font-size: 20px;'>✅ Your Custom Itinerary is Ready!</h2>" + "</div>" + "<div style='background: white; padding: 20px;'>" + "<p style='font-size: 15px; color: #333; margin: 0 0 20px 0;'>Dear <strong>" + user_name + "</strong>,</p>" + "<p style='font-size: 14px; color: #666; margin: 0 0 20px 0;'>Thank you for choosing TravelMate! We've prepared a custom travel itinerary based on your preferences.</p>" + "<div style='background: #f9f9f9; border-left: 4px solid #0066cc; padding: 15px; margin-bottom: 25px;'>" + "<p style='margin: 0; font-size: 12px; color: #999; text-transform: uppercase; letter-spacing: 1px;'>Itinerary Reference</p>" + "<p style='margin: 5px 0 0 0; font-size: 24px; color: #0066cc; font-weight: bold; letter-spacing: 1px;'>" + itinerary_id + "</p>" + "</div>" + "<div style='border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; margin-bottom: 25px;'>" + "<div style='background: #f8f8f8; padding: 12px 15px; border-bottom: 1px solid #e0e0e0;'>" + "<h3 style='margin: 0; font-size: 16px; color: #333;'>📋 Your Trip Details</h3>" + "</div>" + "<table style='width: 100%; border-collapse: collapse;'>" + "<tr style='border-bottom: 1px solid #f0f0f0;'>" + "<td style='padding: 12px 15px; color: #666; font-size: 14px; width: 40%;'>📍 Destination</td>" + "<td style='padding: 12px 15px; color: #333; font-size: 14px; font-weight: 500; text-align: right;'>" + destination + "</td>" + "</tr>" + "<tr style='border-bottom: 1px solid #f0f0f0;'>" + "<td style='padding: 12px 15px; color: #666; font-size: 14px;'>🏠 Starting From</td>" + "<td style='padding: 12px 15px; color: #333; font-size: 14px; font-weight: 500; text-align: right;'>" + current_location + "</td>" + "</tr>" + "<tr style='border-bottom: 1px solid #f0f0f0;'>" + "<td style='padding: 12px 15px; color: #666; font-size: 14px;'>👥 Number of Travelers</td>" + "<td style='padding: 12px 15px; color: #333; font-size: 14px; font-weight: 500; text-align: right;'>" + num_travelers + " Person(s)</td>" + "</tr>" + "<tr style='border-bottom: 1px solid #f0f0f0;'>" + "<td style='padding: 12px 15px; color: #666; font-size: 14px;'>🚗 Transport Mode</td>" + "<td style='padding: 12px 15px; color: #333; font-size: 14px; font-weight: 500; text-align: right;'>" + transport_display + "</td>" + "</tr>" + "<tr>" + "<td style='padding: 12px 15px; color: #666; font-size: 14px;'>📅 Travel Date</td>" + "<td style='padding: 12px 15px; color: #0066cc; font-size: 14px; font-weight: bold; text-align: right;'>" + travel_date + "</td>" + "</tr>" + "</table>" + "</div>" + "<div style='background: #f0f8ff; border: 2px solid #0066cc; border-radius: 8px; padding: 20px; margin-bottom: 25px;'>" + "<h3 style='margin: 0 0 15px 0; font-size: 17px; color: #0066cc; text-align: center;'>🗺️ Your Preferred Travel Route & Itinerary</h3>" + "<div style='background: white; padding: 15px; border-radius: 5px; font-size: 13px; color: #333; line-height: 1.8;'>" + ai_itinerary_html + "</div>" + "</div>" + "<div style='background: #fff9e6; border: 1px solid #ffe082; border-radius: 8px; padding: 15px; margin-bottom: 25px;'>" + "<h3 style='margin: 0 0 10px 0; font-size: 15px; color: #f57c00;'>📞 Your Contact Information</h3>" + "<p style='margin: 0 0 5px 0; font-size: 13px; color: #666;'>📧 <strong>Email:</strong> " + user_email + "</p>" + "<p style='margin: 0; font-size: 13px; color: #666;'>📱 <strong>Phone:</strong> " + user_phone + "</p>" + "</div>" + "<div style='background: #e3f2fd; border-left: 4px solid #2196F3; padding: 12px 15px; margin-bottom: 25px;'>" + "</div>" + "<div style='text-align: center; margin-bottom: 20px;'>" + "<a href='mailto:travelmate003004@gmail.com' style='display: inline-block; background: #0066cc; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-size: 14px; font-weight: bold;'>Contact Support</a>" + "</div>" + "<p style='font-size: 13px; color: #666; text-align: center; margin: 0;'>We're excited to help you plan the perfect trip!</p>" + "</div>" + "<div style='background: #333; padding: 20px; text-align: center;'>" + "<p style='margin: 0 0 5px 0; font-size: 13px; color: #999;'>Warm regards,</p>" + "<p style='margin: 0; font-size: 14px; color: white; font-weight: bold;'>Team TravelMate 🧳✈️</p>" + "<p style='margin: 15px 0 0 0; font-size: 11px; color: #666;'>© 2025 TravelMate. All rights reserved.</p>" + "</div>" + "</div>";
+				email_payload = Map();
+				personalizations = List();
+				person = Map();
+				to_list = List();
+				to_map = Map();
+				to_map.put("email",user_email);
+				to_map.put("name",user_name);
+				to_list.add(to_map);
+				person.put("to",to_list);
+				personalizations.add(person);
+				email_payload.put("personalizations",personalizations);
+				from_map = Map();
+				from_map.put("email","travelmate003004@gmail.com");
+				from_map.put("name","TravelMate");
+				email_payload.put("from",from_map);
+				email_payload.put("subject","🎉 Your Custom Itinerary - " + destination + " | " + itinerary_id);
+				content_list = List();
+				content_map = Map();
+				content_map.put("type","text/html");
+				content_map.put("value",html_content);
+				content_list.add(content_map);
+				email_payload.put("content",content_list);
+				itinerary_response = invokeurl
+				[
+					url :"https://api.sendgrid.com/v3/mail/send"
+					type :POST
+					parameters:email_payload.toString()
+					headers:{"Authorization":"Bearer " + sendgrid_api_key,"Content-Type":"application/json"}
+				];
+				info "Custom itinerary email with AI route sent successfully to: " + user_email;
+				// Success response to user
+				response.put("action","reply");
+				response.put("replies",{"🎉 Perfect! Your custom itinerary with travel route has been sent to " + user_email + "! ✅\n\n📧 Itinerary Reference: " + itinerary_id + "\n📍 Destination: " + destination + "\n🗺️ Route: " + current_location + " → " + destination + "\n📅 Travel Date: " + travel_date + "\n👥 Travelers: " + num_travelers + "\n🚗 Transport: " + transport_display + "\n\nThank you for choosing TravelMate! Have a wonderful trip! 🌍✈️"});
+				return response;
+			}
+			catch (e)
+			{
+				info "Itinerary email sending error: " + e;
+				response.put("action","reply");
+				response.put("replies",{"⚠️ Your itinerary details have been recorded, but there was an issue sending the email.\n\n📧 Reference ID: " + itinerary_id + "\n📍 Destination: " + destination + "\n📅 Travel Date: " + travel_date + "\n\nOur team will contact you shortly at " + user_phone + ". You can also reach us at travelmate003004@gmail.com"});
+				return response;
+			}
+		}
+		else
+		{
+		
+			response.put("action","context");
+			response.put("context_id","payment_stage_final__" + context_id + "||TRAVELDATE:" + travel_date);
+			question = {"name":"go_to_payment","replies":{"Perfect! Your travel date is set for " + travel_date + " ✅\n\nPlease proceed to payment."},"suggestions":{"Continue to Payment"}};
+			response.put("questions",{question});
+			return response;
+		}
+	}
+	catch (e)
+	{
+		info "Date parsing error: " + e;
+		travel_date_widget = {"type":"calendar","time":"false","tz":"true","label":"Select Travel Date","select_label":"Confirm"};
+		question = {"name":"travel_date","replies":{"❌ Invalid date. Try again."},"input":travel_date_widget};
+		response.put("action","context");
+		response.put("context_id",context_id);
+		response.put("questions",{question});
+		return response;
+	}
+}
+//RAZORPAY PAYMENT INTEGRATION
+razorpay_key_id = "rzp_live_Rn90z8qFcaVpsI";
+razorpay_key_secret = "RVSemPxlSm3kLiCAxhVGxtfP";
+if(context_id.startsWith("payment_stage_final"))
+{
+	if(!answers.containsKey("go_to_payment") || answers.get("go_to_payment").get("text") != "Continue to Payment")
+	{
+		question = {"name":"go_to_payment","replies":{"Please click the button to continue."},"suggestions":{"Continue to Payment"}};
+		response.put("action","context");
+		response.put("context_id",context_id);
+		response.put("questions",{question});
+		return response;
+	}
+	final_price = "0";
+	if(context_id.contains("post_pricing__INDIA__"))
+	{
+		pricing_start = context_id.indexOf("post_pricing__INDIA__") + 21;
+		pricing_end = context_id.indexOf("||NAME",pricing_start);
+		if(pricing_end == -1)
+		{
+			pricing_end = context_id.length();
+		}
+		pricing_part = context_id.subString(pricing_start,pricing_end);
+		parts = pricing_part.toList("__");
+		if(parts.size() >= 3)
+		{
+			final_price = parts.get(2);
+		}
+	}
+	else if(context_id.contains("post_pricing__INTL__"))
+	{
+		pricing_start = context_id.indexOf("post_pricing__INTL__") + 20;
+		pricing_end = context_id.indexOf("||NAME",pricing_start);
+		if(pricing_end == -1)
+		{
+			pricing_end = context_id.length();
+		}
+		pricing_part = context_id.subString(pricing_start,pricing_end);
+		parts = pricing_part.toList("__");
+		if(parts.size() >= 3)
+		{
+			final_price = parts.get(2);
+		}
+	}
+	//TESTING MODE: payment amount to ₹1 for testing
+	test_amount = 1;
+	amount_in_paise = test_amount * 100;
+	receipt_id = "TMRECEIPT" + zoho.currenttime.toString("yyyyMMddHHmmss");
+	auth_string = razorpay_key_id + ":" + razorpay_key_secret;
+	auth_header = "Basic " + zoho.encryption.base64Encode(auth_string);
+	try 
+	{
+		payment_link_payload = Map();
+		payment_link_payload.put("amount",amount_in_paise);
+		payment_link_payload.put("currency","INR");
+		payment_link_payload.put("accept_partial",false);
+		payment_link_payload.put("reference_id",receipt_id);
+		payment_link_payload.put("description","TravelMate Booking - Package: ₹" + final_price + " (Test Mode: Pay ₹1 only)");
+		payment_link_payload.put("customer",{"name":"Customer","email":"","contact":""});
+		payment_link_payload.put("notify",{"sms":false,"email":false});
+		payment_link_payload.put("reminder_enable",false);
+		payment_link_payload.put("callback_url","https://yourdomain.com/payment-success");
+		payment_link_payload.put("callback_method","get");
+		notes_map = Map();
+		notes_map.put("package_amount",final_price);
+		notes_map.put("test_mode","true");
+		notes_map.put("booking_type","TravelMate Package");
+		payment_link_payload.put("notes",notes_map);
+		payment_link_response = invokeurl
+		[
+			url :"https://api.razorpay.com/v1/payment_links"
+			type :POST
+			parameters:payment_link_payload.toString()
+			headers:{"Authorization":auth_header,"Content-Type":"application/json"}
+		];
+		if(payment_link_response.containsKey("short_url"))
+		{
+			payment_url = payment_link_response.get("short_url");
+			payment_link_id = payment_link_response.get("id");
+			order_id = payment_link_response.get("order_id");
+			response.put("action","context");
+			response.put("context_id","await_payment__" + order_id + "__" + payment_link_id + "__" + context_id);
+			question = {"name":"payment_done","replies":{{"text":"💳 Your payment link is ready!\n\n📦 Package Amount: ₹" + final_price + "\n💰 Test Payment: ₹1 only\n\n⚠️ *Testing Mode Active*\n\n🔗 Click below to pay securely via Razorpay:\n" + payment_url},{"text":"After completing payment, type \"Done\" to verify.\n\nOr if you want to cancel this payment, type \"Cancel Payment\" below."}},"input":{"type":"name","placeholder":"Type Done"},"suggestions":{"Done","Cancel Payment"}};
+			response.put("questions",{question});
+			return response;
+		}
+		else
+		{
+			response.put("action","reply");
+			response.put("replies",{"❌ Unable to create payment link. Please try again or contact support."});
+			return response;
+		}
+	}
+	catch (e)
+	{
+		info "Razorpay Payment Link Creation Error: " + e;
+		response.put("action","reply");
+		response.put("replies",{"❌ Payment system error. Please try again later or contact support.\n\nError: " + e});
+		return response;
+	}
+}
+//PAYMENT VERIFICATION
+if(context_id.startsWith("await_payment"))
+{
+	if(!answers.containsKey("payment_done"))
+	{
+		question = {"name":"payment_done","replies":{"Once you complete the payment, please type \"Done\".\n\nOr type \"Cancel Payment\" to cancel this transaction."},"input":{"type":"name","placeholder":"Type Done"},"suggestions":{"Done","Cancel Payment"}};
+		response.put("action","context");
+		response.put("context_id",context_id);
+		response.put("questions",{question});
+		return response;
+	}
+	done_text = answers.get("payment_done").get("text");
+	if(done_text == "Cancel Payment")
+	{
+		parts = context_id.toList("__");
+		if(parts.size() >= 3)
+		{
+			order_id = parts.get(1);
+			payment_link_id = parts.get(2);
+			try 
+			{
+				auth_string = razorpay_key_id + ":" + razorpay_key_secret;
+				auth_header = "Basic " + zoho.encryption.base64Encode(auth_string);
+				cancel_payload = Map();
+				cancel_response = invokeurl
+				[
+					url :"https://api.razorpay.com/v1/payment_links/" + payment_link_id + "/cancel"
+					type :POST
+					parameters:cancel_payload.toString()
+					headers:{"Authorization":auth_header,"Content-Type":"application/json"}
+				];
+				info "Payment link cancelled successfully: " + payment_link_id;
+				base_context = context_id.subString(context_id.indexOf("__",context_id.indexOf("__") + 2) + 2);
+				response.put("action","context");
+				response.put("context_id","payment_cancelled__" + order_id + "__" + base_context);
+				question = {"name":"after_cancel_choice","replies":{"❌ Payment Cancelled Successfully!\n\n🔖 Order ID: " + order_id + " has been cancelled.\n\nWhat would you like to do next?"},"suggestions":{"Retry Payment","End Chat"}};
+				response.put("questions",{question});
+				return response;
+			}
+			catch (e)
+			{
+				info "Error cancelling payment link: " + e;
+				base_context = context_id.subString(context_id.indexOf("__",context_id.indexOf("__") + 2) + 2);
+				response.put("action","context");
+				response.put("context_id","payment_cancelled__" + order_id + "__" + base_context);
+				question = {"name":"after_cancel_choice","replies":{"⚠️ Payment cancellation processed.\n\n🔖 Order ID: " + order_id + "\n\nWhat would you like to do next?"},"suggestions":{"Retry Payment","End Chat"}};
+				response.put("questions",{question});
+				return response;
+			}
+		}
+	}
+	if(done_text.toLowerCase() == "done")
+	{
+		parts = context_id.toList("__");
+		if(parts.size() >= 3)
+		{
+			order_id = parts.get(1);
+			payment_link_id = parts.get(2);
+			payment_verified = false;
+			payment_pending = false;
+			try 
+			{
+				auth_string = razorpay_key_id + ":" + razorpay_key_secret;
+				auth_header = "Basic " + zoho.encryption.base64Encode(auth_string);
+				if(payment_link_id != "NONE")
+				{
+					payment_status_response = invokeurl
+					[
+						url :"https://api.razorpay.com/v1/payment_links/" + payment_link_id
+						type :GET
+						headers:{"Authorization":auth_header}
+					];
+					if(payment_status_response.containsKey("status"))
+					{
+						status = payment_status_response.get("status");
+						if(status == "paid")
+						{
+							payment_verified = true;
+							info "Payment verified successfully for Order: " + order_id;
+						}
+						else if(status == "created" || status == "issued")
+						{
+							payment_pending = true;
+						}
+						else
+						{
+							response.put("action","reply");
+							response.put("replies",{"❌ Payment " + status + "\n\nPlease try again or contact support.\n\nOrder ID: " + order_id});
+							return response;
+						}
+					}
+				}
+				if(!payment_verified && !payment_pending)
+				{
+					order_status_response = invokeurl
+					[
+						url :"https://api.razorpay.com/v1/orders/" + order_id
+						type :GET
+						headers:{"Authorization":auth_header}
+					];
+					if(order_status_response.containsKey("status"))
+					{
+						order_status = order_status_response.get("status");
+						if(order_status == "paid")
+						{
+							payment_verified = true;
+							info "Order verified as paid: " + order_id;
+						}
+						else if(order_status == "created" || order_status == "attempted")
+						{
+							payment_pending = true;
+						}
+					}
+				}
+				if(payment_pending && !payment_verified)
+				{
+					response.put("action","context");
+					response.put("context_id","payment_retry__" + context_id);
+					question = {"name":"retry_payment","replies":{"⏳ Your payment is still processing.\n\nThis could mean:\n• Payment not yet completed\n• Payment gateway delay\n• Transaction in progress\n\nWould you like to:\n1️⃣ Wait and verify again\n2️⃣ Retry with a new payment link"},"suggestions":{"Verify Again","Retry Payment"}};
+					response.put("questions",{question});
+					return response;
+				}
+			}
+			catch (e)
+			{
+				info "Payment Verification Error: " + e;
+				response.put("action","reply");
+				response.put("replies",{"⚠️ Unable to verify payment status.\n\nPlease contact support with Order ID: " + order_id});
+				return response;
+			}
+			if(payment_verified)
+			{
+				user_name = "N/A";
+				user_email = "N/A";
+				user_phone = "N/A";
+				selected_package = "Not Selected";
+				trip_type = "Standard";
+				member_count = "1";
+				travel_date = "TBD";
+				final_price = "0";
+				destination = "Unknown";
+				pkg_title = "Travel Package";
+				pkg_desc = "Exciting destinations";
+				pkg_hotel = "Comfortable stay";
+				if(context_id.contains("NAME:"))
+				{
+					name_start = context_id.indexOf("NAME:") + 5;
+					name_end = context_id.indexOf("||",name_start);
+					if(name_end == -1)
+					{
+						name_end = context_id.length();
+					}
+					user_name = context_id.subString(name_start,name_end);
+				}
+				if(context_id.contains("EMAIL:"))
+				{
+					email_start = context_id.indexOf("EMAIL:") + 6;
+					email_end = context_id.indexOf("||",email_start);
+					if(email_end == -1)
+					{
+						email_end = context_id.length();
+					}
+					user_email = context_id.subString(email_start,email_end);
+				}
+				if(context_id.contains("PHONE:"))
+				{
+					phone_start = context_id.indexOf("PHONE:") + 6;
+					phone_end = context_id.indexOf("||",phone_start);
+					if(phone_end == -1)
+					{
+						phone_end = context_id.length();
+					}
+					user_phone = context_id.subString(phone_start,phone_end);
+				}
+				if(context_id.contains("TRAVELDATE:"))
+				{
+					date_start = context_id.indexOf("TRAVELDATE:") + 11;
+					date_end = context_id.indexOf("||",date_start);
+					if(date_end == -1)
+					{
+						date_end = context_id.length();
+					}
+					travel_date = context_id.subString(date_start,date_end);
+				}
+				if(context_id.contains("post_pricing__INDIA__"))
+				{
+					pricing_start = context_id.indexOf("post_pricing__INDIA__") + 21;
+					pricing_end = context_id.indexOf("||NAME",pricing_start);
+					if(pricing_end == -1)
+					{
+						pricing_end = context_id.length();
+					}
+					pricing_part = context_id.subString(pricing_start,pricing_end);
+					parts = pricing_part.toList("__");
+					if(parts.size() >= 4)
+					{
+						destination = parts.get(0);
+						selected_package = parts.get(0);
+						trip_type = parts.get(1);
+						final_price = parts.get(2);
+						member_count = parts.get(3);
+						if(destination == "Goa")
+						{
+							pkg_title = "Goa Sun & Sand (3N/4D)";
+							pkg_desc = "North Goa Beaches, Fort Aguada, Cruise";
+							pkg_hotel = "3★ Resort (Breakfast included)";
+						}
+						else if(destination == "Kerala")
+						{
+							pkg_title = "Kerala Bliss (4N/5D)";
+							pkg_desc = "Munnar, Alleppey Houseboat";
+							pkg_hotel = "Hill Resort + Houseboat";
+						}
+						else if(destination == "Kashmir")
+						{
+							pkg_title = "Heaven on Earth (4N/5D)";
+							pkg_desc = "Dal Lake, Gulmarg, Pahalgam";
+							pkg_hotel = "Houseboat + Hotel";
+						}
+						else if(destination == "Manali")
+						{
+							pkg_title = "Snow Retreat (3N/4D)";
+							pkg_desc = "Solang Valley, Atal Tunnel";
+							pkg_hotel = "Mountain View Hotel";
+						}
+						else if(destination == "Ladakh")
+						{
+							pkg_title = "Ladakh Adventure (5N/6D)";
+							pkg_desc = "Leh, Pangong Lake, Nubra";
+							pkg_hotel = "Luxury Camps";
+						}
+						else if(destination == "Jaipur")
+						{
+							pkg_title = "Royal Rajasthan (3N/4D)";
+							pkg_desc = "Amber Fort, City Palace";
+							pkg_hotel = "Heritage Haveli";
+						}
+					}
+				}
+				else if(context_id.contains("post_pricing__INTL__"))
+				{
+					pricing_start = context_id.indexOf("post_pricing__INTL__") + 20;
+					pricing_end = context_id.indexOf("||NAME",pricing_start);
+					if(pricing_end == -1)
+					{
+						pricing_end = context_id.length();
+					}
+					pricing_part = context_id.subString(pricing_start,pricing_end);
+					parts = pricing_part.toList("__");
+					if(parts.size() >= 4)
+					{
+						destination = parts.get(0);
+						selected_package = parts.get(0);
+						trip_type = parts.get(1);
+						final_price = parts.get(2);
+						member_count = parts.get(3);
+						if(destination == "Dubai")
+						{
+							pkg_title = "Dubai Habibi (4N/5D)";
+							pkg_desc = "Burj Khalifa, Desert Safari";
+							pkg_hotel = "4★ Downtown Hotel";
+						}
+						else if(destination == "Bali")
+						{
+							pkg_title = "Bali Dream (5N/6D)";
+							pkg_desc = "Ubud, Tanah Lot, Kuta";
+							pkg_hotel = "Pool Villa + Resort";
+						}
+						else if(destination == "Maldives")
+						{
+							pkg_title = "Ocean Paradise (3N/4D)";
+							pkg_desc = "Private Island, Snorkeling";
+							pkg_hotel = "Water Villa (All Inclusive)";
+						}
+						else if(destination == "Singapore")
+						{
+							pkg_title = "Singapore Skylines (4N/5D)";
+							pkg_desc = "Sentosa, Gardens by the Bay";
+							pkg_hotel = "3★ City Hotel";
+						}
+						else if(destination == "Thailand")
+						{
+							pkg_title = "Thai Fun (5N/6D)";
+							pkg_desc = "Bangkok, Phuket Islands";
+							pkg_hotel = "Beach Resort";
+						}
+						else if(destination == "Vietnam")
+						{
+							pkg_title = "Vietnam Heritage (5N/6D)";
+							pkg_desc = "Ha Long Bay, Hanoi";
+							pkg_hotel = "Heritage Hotel";
+						}
+					}
+				}
+				booking_id = "TM" + zoho.currenttime.toString("yyyyMMddHHmmss");
+				payload = Map();
+				payload.put("booking_id",booking_id);
+				payload.put("name",user_name);
+				payload.put("phone",user_phone);
+				payload.put("email",user_email);
+				payload.put("travel_date",travel_date);
+				payload.put("type_of_trip",trip_type);
+				payload.put("package",selected_package);
+				payload.put("member_count",member_count);
+				payload.put("total_price",final_price);
+				payload.put("submission_time",zoho.currenttime.toString("yyyy-MM-dd HH:mm:ss"));
+				try 
+				{
+					sheet_resp = invokeurl
+					[
+						url :"https://script.google.com/macros/s/AKfycbwcv45TdWsEvhUNs-bfBrGjgM0usfcdI0aUiwEmB9y6u6vh9iBJAX9cvEZjFTODmaR6sA/exec"
+						type :POST
+						parameters:payload.toString()
+						headers:{"Content-Type":"application/json"}
+						connection:"googlesheet_connection"
+					];
+				}
+				catch (e)
+				{
+					info "Google Sheet Error: " + e;
+				}
+				try 
+				{
+					sendgrid_api_key = "<SENDGRID_API_KEY>";
+					email_payload = Map();
+					personalizations = List();
+					person = Map();
+					to_list = List();
+					to_map = Map();
+					to_map.put("email",user_email);
+					to_map.put("name",user_name);
+					to_list.add(to_map);
+					person.put("to",to_list);
+					personalizations.add(person);
+					email_payload.put("personalizations",personalizations);
+					from_map = Map();
+					from_map.put("email","travelmate003004@gmail.com");
+					from_map.put("name","TravelMate");
+					email_payload.put("from",from_map);
+					email_payload.put("subject","🎉 Booking Confirmed - " + pkg_title + " | " + booking_id);
+					html_content = "<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f5f5f5;'>" + "<div style='background: linear-gradient(135deg, #0066cc 0%, #004a99 100%); padding: 30px 20px; text-align: center;'>" + "<div style='display: inline-block; margin-bottom: 10px;'>🧳</div>" + "<h1 style='color: white; margin: 0; font-size: 28px;'>TravelMate</h1>" + "<p style='color: #e0e0e0; margin: 5px 0 0 0; font-size: 14px;'>Your Journey Begins Here</p>" + "</div>" + "<div style='background: #4CAF50; padding: 15px; text-align: center;'>" + "<h2 style='color: white; margin: 0; font-size: 20px;'>✅ Booking Confirmed!</h2>" + "<p style='color: white; margin: 5px 0 0 0; font-size: 13px;'>Your trip is all set. Get ready for an amazing adventure!</p>" + "</div>" + "<div style='background: white; padding: 20px;'>" + "<p style='font-size: 15px; color: #333; margin: 0 0 20px 0;'>Dear <strong>" + user_name + "</strong>,</p>" + "<p style='font-size: 14px; color: #666; margin: 0 0 20px 0;'>Thank you for choosing TravelMate! We're excited to be part of your travel journey. Your booking has been confirmed and we're here for everything for your upcoming trip.</p>" + "<div style='background: #f9f9f9; border-left: 4px solid #0066cc; padding: 15px; margin-bottom: 25px;'>" + "<p style='margin: 0; font-size: 12px; color: #999; text-transform: uppercase; letter-spacing: 1px;'>Booking Reference</p>" + "<p style='margin: 5px 0 0 0; font-size: 24px; color: #0066cc; font-weight: bold; letter-spacing: 1px;'>" + booking_id + "</p>" + "</div>" + "<div style='border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; margin-bottom: 25px;'>" + "<div style='background: #f8f8f8; padding: 12px 15px; border-bottom: 1px solid #e0e0e0;'>" + "<h3 style='margin: 0; font-size: 16px; color: #333;'>📋 Trip Details</h3>" + "</div>" + "<table style='width: 100%; border-collapse: collapse;'>" + "<tr style='border-bottom: 1px solid #f0f0f0;'>" + "<td style='padding: 12px 15px; color: #666; font-size: 14px; width: 40%;'>📍 Destination</td>" + "<td style='padding: 12px 15px; color: #333; font-size: 14px; font-weight: 500; text-align: right;'>" + destination + "</td>" + "</tr>" + "<tr style='border-bottom: 1px solid #f0f0f0;'>" + "<td style='padding: 12px 15px; color: #666; font-size: 14px;'>📦 Package</td>" + "<td style='padding: 12px 15px; color: #333; font-size: 14px; font-weight: 500; text-align: right;'>" + pkg_title + "</td>" + "</tr>" + "<tr style='border-bottom: 1px solid #f0f0f0;'>" + "<td style='padding: 12px 15px; color: #666; font-size: 14px;'>🎒 Trip Type</td>" + "<td style='padding: 12px 15px; color: #333; font-size: 14px; font-weight: 500; text-align: right;'>" + trip_type + "</td>" + "</tr>" + "<tr style='border-bottom: 1px solid #f0f0f0;'>" + "<td style='padding: 12px 15px; color: #666; font-size: 14px;'>👥 Members</td>" + "<td style='padding: 12px 15px; color: #333; font-size: 14px; font-weight: 500; text-align: right;'>" + member_count + " Member(s)</td>" + "</tr>" + "<tr style='border-bottom: 1px solid #f0f0f0;'>" + "<td style='padding: 12px 15px; color: #666; font-size: 14px;'>📅 Travel Date</td>" + "<td style='padding: 12px 15px; color: #333; font-size: 14px; font-weight: 500; text-align: right;'>" + travel_date + "</td>" + "</tr>" + "<tr>" + "<td style='padding: 12px 15px; color: #666; font-size: 14px;'>💰 Total Amount</td>" + "<td style='padding: 12px 15px; color: #0066cc; font-size: 16px; font-weight: bold; text-align: right;'>₹" + final_price + "</td>" + "</tr>" + "</table>" + "</div>" + "<div style='background: #fffbf0; border: 1px solid #ffe082; border-radius: 8px; padding: 15px; margin-bottom: 25px;'>" + "<h3 style='margin: 0 0 10px 0; font-size: 15px; color: #f57c00;'>✨ Package Highlights</h3>" + "<p style='margin: 0 0 8px 0; font-size: 13px; color: #666;'><strong>🗺️ Sightseeing:</strong> " + pkg_desc + "</p>" + "<p style='margin: 0; font-size: 13px; color: #666;'><strong>🏨 Accommodation:</strong> " + pkg_hotel + "</p>" + "</div>" + "<div style='background: #fff9e6; border: 1px solid #ffe082; border-radius: 8px; padding: 15px; margin-bottom: 25px;'>" + "<h3 style='margin: 0 0 10px 0; font-size: 15px; color: #f57c00;'>📞 Your Contact Information</h3>" + "<p style='margin: 0 0 5px 0; font-size: 13px; color: #666;'>📧 <strong>Email:</strong> " + user_email + "</p>" + "<p style='margin: 0; font-size: 13px; color: #666;'>📱 <strong>Phone:</strong> " + user_phone + "</p>" + "</div>" + "<div style='background: #e3f2fd; border-left: 4px solid #2196F3; padding: 12px 15px; margin-bottom: 25px;'>" + "<p style='margin: 0; font-size: 13px; color: #1565C0;'><strong>💡 Important:</strong> Please keep this booking reference handy. Our team will contact you shortly with complete itinerary and travel documents.</p>" + "</div>" + "<div style='margin-bottom: 25px;'>" + "<h3 style='margin: 0 0 12px 0; font-size: 16px; color: #333;'>🔔 What's Next?</h3>" + "<ul style='margin: 0; padding-left: 20px; color: #666; font-size: 13px; line-height: 1.8;'>" + "<li>Our travel expert will call you within 24 hours</li>" + "<li>You'll receive detailed itinerary via email</li>" + "<li>Complete travel documents will be shared</li>" + "<li>24/7 support available throughout your journey</li>" + "</ul>" + "</div>" + "<div style='text-align: center; margin-bottom: 20px;'>" + "<a href='mailto:travelmate003004@gmail.com' style='display: inline-block; background: #0066cc; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-size: 14px; font-weight: bold;'>Contact Support</a>" + "</div>" + "<p style='font-size: 13px; color: #666; text-align: center; margin: 0;'>We're thrilled to be part of your travel experience and committed to making it memorable. Safe travels!</p>" + "</div>" + "<div style='background: #333; padding: 20px; text-align: center;'>" + "<p style='margin: 0 0 5px 0; font-size: 13px; color: #999;'>Warm regards,</p>" + "<p style='margin: 0; font-size: 14px; color: white; font-weight: bold;'>Team TravelMate 🧳✈️</p>" + "<p style='margin: 15px 0 0 0; font-size: 11px; color: #666;'>This is an automated confirmation email. Please do not reply to this email.</p>" + "<p style='margin: 3px 0 0 0; font-size: 11px; color: #666;'>© 2025 TravelMate. All rights reserved.</p>" + "</div>" + "</div>";
+					content_list = List();
+					content_map = Map();
+					content_map.put("type","text/html");
+					content_map.put("value",html_content);
+					content_list.add(content_map);
+					email_payload.put("content",content_list);
+					confirmation_response = invokeurl
+					[
+						url :"https://api.sendgrid.com/v3/mail/send"
+						type :POST
+						parameters:email_payload.toString()
+						headers:{"Authorization":"Bearer " + sendgrid_api_key,"Content-Type":"application/json"}
+					];
+					info "Booking confirmation email sent successfully to: " + user_email;
+				}
+				catch (e)
+				{
+					info "Email sending error: " + e;
+				}
+				post_booking_context = "post_booking_options__BOOKINGID:" + booking_id + "||EMAIL:" + user_email + "||NAME:" + user_name + "||TRAVELDATE:" + travel_date + "||DESTINATION:" + destination + "||MEMBERCOUNT:" + member_count + "||FINALPRICE:" + final_price + "||PKGTITLE:" + pkg_title + "||PKGDESC:" + pkg_desc + "||PKGHOTEL:" + pkg_hotel + "||TRIPTYPE:" + trip_type + "||PHONE:" + user_phone;
+				response.put("action","context");
+				response.put("context_id",post_booking_context);
+				question = {"name":"post_booking_choice","replies":{{"text":"🎉 Payment Verified! Your booking is confirmed!\n\n📧 Booking confirmation sent to " + user_email + "\n\n🎫 Booking ID: " + booking_id + "\n📅 Travel Date: " + travel_date + "\n\n✈️ Our team will contact you shortly. Have a wonderful trip!"},{"text":"How can I help you further?"}},"suggestions":{"Send me my trip details to my email again.","Want to explore again! Click here.","End chat"}};
+				response.put("questions",{question});
+				return response;
+			}
+		}
+	}
+	else
+	{
+		question = {"name":"payment_done","replies":{"Please type \"Done\" once you finish the payment, or type \"Cancel Payment\" to cancel."},"input":{"type":"name","placeholder":"Type Done"},"suggestions":{"Done","Cancel Payment"}};
+		response.put("action","context");
+		response.put("context_id",context_id);
+		response.put("questions",{question});
+		return response;
+	}
+}
+//PAYMENT RETRY
+if(context_id.startsWith("payment_retry__"))
+{
+	if(!answers.containsKey("retry_payment"))
+	{
+		question = {"name":"retry_payment","replies":{"Please choose an option."},"suggestions":{"Verify Again","Retry Payment"}};
+		response.put("action","context");
+		response.put("context_id",context_id);
+		response.put("questions",{question});
+		return response;
+	}
+	retry_choice = answers.get("retry_payment").get("text");
+	if(retry_choice == "Verify Again")
+	{
+		original_context = context_id.replaceAll("payment_retry__","");
+		response.put("action","context");
+		response.put("context_id",original_context);
+		question = {"name":"payment_done","replies":{"Let's verify your payment again.\n\nPlease type \"Done\" to check payment status."},"input":{"type":"name","placeholder":"Type Done"},"suggestions":{"Done","Cancel Payment"}};
+		response.put("questions",{question});
+		return response;
+	}
+	else if(retry_choice == "Retry Payment")
+	{
+		original_context = context_id.replaceAll("payment_retry__","");
+		parts = original_context.toList("__");
+		if(parts.size() >= 3)
+		{
+			old_order_id = parts.get(1);
+			old_payment_link_id = parts.get(2);
+			try 
+			{
+				auth_string = razorpay_key_id + ":" + razorpay_key_secret;
+				auth_header = "Basic " + zoho.encryption.base64Encode(auth_string);
+				cancel_payload = Map();
+				cancel_response = invokeurl
+				[
+					url :"https://api.razorpay.com/v1/payment_links/" + old_payment_link_id + "/cancel"
+					type :POST
+					parameters:cancel_payload.toString()
+					headers:{"Authorization":auth_header,"Content-Type":"application/json"}
+				];
+				info "Cancelled old payment link: " + old_payment_link_id;
+			}
+			catch (e)
+			{
+				info "Error cancelling payment link (may already be expired): " + e;
+			}
+			base_context = original_context.subString(original_context.indexOf("__",original_context.indexOf("__") + 2) + 2);
+			final_price = "0";
+			if(base_context.contains("post_pricing__INDIA__"))
+			{
+				pricing_start = base_context.indexOf("post_pricing__INDIA__") + 21;
+				pricing_end = base_context.indexOf("||NAME",pricing_start);
+				if(pricing_end == -1)
+				{
+					pricing_end = base_context.length();
+				}
+				pricing_part = base_context.subString(pricing_start,pricing_end);
+				parts_temp = pricing_part.toList("__");
+				if(parts_temp.size() >= 3)
+				{
+					final_price = parts_temp.get(2);
+				}
+			}
+			else if(base_context.contains("post_pricing__INTL__"))
+			{
+				pricing_start = base_context.indexOf("post_pricing__INTL__") + 20;
+				pricing_end = base_context.indexOf("||NAME",pricing_start);
+				if(pricing_end == -1)
+				{
+					pricing_end = base_context.length();
+				}
+				pricing_part = base_context.subString(pricing_start,pricing_end);
+				parts_temp = pricing_part.toList("__");
+				if(parts_temp.size() >= 3)
+				{
+					final_price = parts_temp.get(2);
+				}
+			}
+			test_amount = 1;
+			amount_in_paise = test_amount * 100;
+			receipt_id = "TMRECEIPT" + zoho.currenttime.toString("yyyyMMddHHmmss");
+			auth_string = razorpay_key_id + ":" + razorpay_key_secret;
+			auth_header = "Basic " + zoho.encryption.base64Encode(auth_string);
+			try 
+			{
+				payment_link_payload = Map();
+				payment_link_payload.put("amount",amount_in_paise);
+				payment_link_payload.put("currency","INR");
+				payment_link_payload.put("accept_partial",false);
+				payment_link_payload.put("reference_id",receipt_id);
+				payment_link_payload.put("description","TravelMate Retry - Package: ₹" + final_price + " (Test Mode: Pay ₹1 only)");
+				payment_link_payload.put("customer",{"name":"Customer","email":"","contact":""});
+				payment_link_payload.put("notify",{"sms":false,"email":false});
+				payment_link_payload.put("reminder_enable",false);
+				payment_link_payload.put("callback_url","https://yourdomain.com/payment-success");
+				payment_link_payload.put("callback_method","get");
+				notes_map = Map();
+				notes_map.put("package_amount",final_price);
+				notes_map.put("test_mode","true");
+				notes_map.put("booking_type","TravelMate Retry");
+				payment_link_payload.put("notes",notes_map);
+				payment_link_response = invokeurl
+				[
+					url :"https://api.razorpay.com/v1/payment_links"
+					type :POST
+					parameters:payment_link_payload.toString()
+					headers:{"Authorization":auth_header,"Content-Type":"application/json"}
+				];
+				if(payment_link_response.containsKey("short_url"))
+				{
+					payment_url = payment_link_response.get("short_url");
+					new_payment_link_id = payment_link_response.get("id");
+					new_order_id = payment_link_response.get("order_id");
+					response.put("action","context");
+					response.put("context_id","await_payment__" + new_order_id + "__" + new_payment_link_id + "__" + base_context);
+					question = {"name":"payment_done","replies":{{"text":"🔄 New payment link generated!\n\n❌ Previous order cancelled: " + old_order_id},{"text":"💳 Payment Link:\n" + payment_url},{"text":"📦 Package Amount: ₹" + final_price + "\n💰 Test Payment: ₹1 only\n\n⚠️ *Testing Mode Active*\n\nAfter completing payment, type \"Done\" to verify.\n\nOr type \"Cancel Payment\" to cancel."}},"input":{"type":"name","placeholder":"Type Done"},"suggestions":{"Done","Cancel Payment"}};
+					response.put("questions",{question});
+					return response;
+				}
+				else
+				{
+					response.put("action","reply");
+					response.put("replies",{"❌ Unable to create new payment link. Please contact support.\n\nCancelled Order: " + old_order_id});
+					return response;
+				}
+			}
+			catch (e)
+			{
+				info "Retry Payment Link Creation Error: " + e;
+				response.put("action","reply");
+				response.put("replies",{"❌ Payment system error during retry. Please contact support.\n\nError: " + e + "\n\nCancelled Order: " + old_order_id});
+				return response;
+			}
+		}
+	}
+}
+// PAYMENT CANCELLED
+if(context_id.startsWith("payment_cancelled__"))
+{
+	if(!answers.containsKey("after_cancel_choice"))
+	{
+		question = {"name":"after_cancel_choice","replies":{"What would you like to do?"},"suggestions":{"Retry Payment","End Chat"}};
+		response.put("action","context");
+		response.put("context_id",context_id);
+		response.put("questions",{question});
+		return response;
+	}
+	choice = answers.get("after_cancel_choice").get("text");
+	if(choice == "Retry Payment")
+	{
+		parts = context_id.toList("__");
+		if(parts.size() >= 3)
+		{
+			cancelled_order_id = parts.get(1);
+			base_context = context_id.subString(context_id.indexOf("__",context_id.indexOf("__") + 2) + 2);
+			final_price = "0";
+			if(base_context.contains("post_pricing__INDIA__"))
+			{
+				pricing_start = base_context.indexOf("post_pricing__INDIA__") + 21;
+				pricing_end = base_context.indexOf("||NAME",pricing_start);
+				if(pricing_end == -1)
+				{
+					pricing_end = base_context.length();
+				}
+				pricing_part = base_context.subString(pricing_start,pricing_end);
+				parts_temp = pricing_part.toList("__");
+				if(parts_temp.size() >= 3)
+				{
+					final_price = parts_temp.get(2);
+				}
+			}
+			else if(base_context.contains("post_pricing__INTL__"))
+			{
+				pricing_start = base_context.indexOf("post_pricing__INTL__") + 20;
+				pricing_end = base_context.indexOf("||NAME",pricing_start);
+				if(pricing_end == -1)
+				{
+					pricing_end = base_context.length();
+				}
+				pricing_part = base_context.subString(pricing_start,pricing_end);
+				parts_temp = pricing_part.toList("__");
+				if(parts_temp.size() >= 3)
+				{
+					final_price = parts_temp.get(2);
+				}
+			}
+			test_amount = 1;
+			amount_in_paise = test_amount * 100;
+			receipt_id = "TMRECEIPT" + zoho.currenttime.toString("yyyyMMddHHmmss");
+			auth_string = razorpay_key_id + ":" + razorpay_key_secret;
+			auth_header = "Basic " + zoho.encryption.base64Encode(auth_string);
+			try 
+			{
+				payment_link_payload = Map();
+				payment_link_payload.put("amount",amount_in_paise);
+				payment_link_payload.put("currency","INR");
+				payment_link_payload.put("accept_partial",false);
+				payment_link_payload.put("reference_id",receipt_id);
+				payment_link_payload.put("description","TravelMate After Cancel - Package: ₹" + final_price + " (Test Mode: Pay ₹1 only)");
+				payment_link_payload.put("customer",{"name":"Customer","email":"","contact":""});
+				payment_link_payload.put("notify",{"sms":false,"email":false});
+				payment_link_payload.put("reminder_enable",false);
+				payment_link_payload.put("callback_url","https://yourdomain.com/payment-success");
+				payment_link_payload.put("callback_method","get");
+				notes_map = Map();
+				notes_map.put("package_amount",final_price);
+				notes_map.put("test_mode","true");
+				notes_map.put("booking_type","TravelMate After Cancel");
+				payment_link_payload.put("notes",notes_map);
+				payment_link_response = invokeurl
+				[
+					url :"https://api.razorpay.com/v1/payment_links"
+					type :POST
+					parameters:payment_link_payload.toString()
+					headers:{"Authorization":auth_header,"Content-Type":"application/json"}
+				];
+				if(payment_link_response.containsKey("short_url"))
+				{
+					payment_url = payment_link_response.get("short_url");
+					new_payment_link_id = payment_link_response.get("id");
+					new_order_id = payment_link_response.get("order_id");
+					response.put("action","context");
+					response.put("context_id","await_payment__" + new_order_id + "__" + new_payment_link_id + "__" + base_context);
+					question = {"name":"payment_done","replies":{{"text":"🔄 New payment link generated!\n\n❌ Previous order cancelled: " + cancelled_order_id},{"text":"💳 Payment Link:\n" + payment_url},{"text":"📦 Package Amount: ₹" + final_price + "\n💰 Test Payment: ₹1 only\n\n⚠️ *Testing Mode Active*\n\nAfter completing payment, type \"Done\" to verify.\n\nOr type \"Cancel Payment\" to cancel."}},"input":{"type":"name","placeholder":"Type Done"},"suggestions":{"Done","Cancel Payment"}};
+					response.put("questions",{question});
+					return response;
+				}
+				else
+				{
+					response.put("action","reply");
+					response.put("replies",{"❌ Unable to create new payment link. Please contact support.\n\nCancelled Order: " + cancelled_order_id});
+					return response;
+				}
+			}
+			catch (e)
+			{
+				info "Retry Payment Link Creation Error: " + e;
+				response.put("action","reply");
+				response.put("replies",{"❌ Payment system error during retry. Please contact support.\n\nError: " + e});
+				return response;
+			}
+		}
+	}
+	else if(choice == "End Chat")
+	{
+		response.put("action","reply");
+		response.put("replies",{"Thank you for considering TravelMate! 🧳\n\nIf you change your mind, feel free to return anytime.\n\nType 'Hi' to start a new booking.\n\nHave a great day! 😊"});
+		return response;
+	}
+	else
+	{
+		question = {"name":"after_cancel_choice","replies":{"Please use the buttons to select an option."},"suggestions":{"Retry Payment","End Chat"}};
+		response.put("action","context");
+		response.put("context_id",context_id);
+		response.put("questions",{question});
+		return response;
+	}
+}
+// POST-BOOKING OPTIONS
+if(context_id.startsWith("post_booking_options"))
+{
+	if(!answers.containsKey("post_booking_choice"))
+	{
+		question = {"name":"post_booking_choice","replies":{"How can I help you further?"},"suggestions":{"Send me my trip details to my email again.","Want to explore again! Click here.","End chat"}};
+		response.put("action","context");
+		response.put("context_id",context_id);
+		response.put("questions",{question});
+		return response;
+	}
+	choice = answers.get("post_booking_choice").get("text");
+	if(choice == "Send me my trip details to my email again.")
+	{
+		user_email = "N/A";
+		user_name = "N/A";
+		user_phone = "N/A";
+		booking_id = "N/A";
+		destination = "Unknown";
+		travel_date = "TBD";
+		member_count = "1";
+		final_price = "0";
+		pkg_title = "Travel Package";
+		pkg_desc = "Exciting destinations";
+		pkg_hotel = "Comfortable stay";
+		trip_type = "Standard";
+		if(context_id.contains("BOOKINGID:"))
+		{
+			id_start = context_id.indexOf("BOOKINGID:") + 10;
+			id_end = context_id.indexOf("||",id_start);
+			if(id_end == -1)
+			{
+				id_end = context_id.length();
+			}
+			booking_id = context_id.subString(id_start,id_end);
+		}
+		if(context_id.contains("EMAIL:"))
+		{
+			email_start = context_id.indexOf("EMAIL:") + 6;
+			email_end = context_id.indexOf("||",email_start);
+			if(email_end == -1)
+			{
+				email_end = context_id.length();
+			}
+			user_email = context_id.subString(email_start,email_end);
+		}
+		if(context_id.contains("NAME:"))
+		{
+			name_start = context_id.indexOf("NAME:") + 5;
+			name_end = context_id.indexOf("||",name_start);
+			if(name_end == -1)
+			{
+				name_end = context_id.length();
+			}
+			user_name = context_id.subString(name_start,name_end);
+		}
+		if(context_id.contains("PHONE:"))
+		{
+			phone_start = context_id.indexOf("PHONE:") + 6;
+			phone_end = context_id.indexOf("||",phone_start);
+			if(phone_end == -1)
+			{
+				phone_end = context_id.length();
+			}
+			user_phone = context_id.subString(phone_start,phone_end);
+		}
+		if(context_id.contains("DESTINATION:"))
+		{
+			dest_start = context_id.indexOf("DESTINATION:") + 12;
+			dest_end = context_id.indexOf("||",dest_start);
+			if(dest_end == -1)
+			{
+				dest_end = context_id.length();
+			}
+			destination = context_id.subString(dest_start,dest_end);
+		}
+		if(context_id.contains("TRAVELDATE:"))
+		{
+			date_start = context_id.indexOf("TRAVELDATE:") + 11;
+			date_end = context_id.indexOf("||",date_start);
+			if(date_end == -1)
+			{
+				date_end = context_id.length();
+			}
+			travel_date = context_id.subString(date_start,date_end);
+		}
+		if(context_id.contains("MEMBERCOUNT:"))
+		{
+			mem_start = context_id.indexOf("MEMBERCOUNT:") + 12;
+			mem_end = context_id.indexOf("||",mem_start);
+			if(mem_end == -1)
+			{
+				mem_end = context_id.length();
+			}
+			member_count = context_id.subString(mem_start,mem_end);
+		}
+		if(context_id.contains("FINALPRICE:"))
+		{
+			price_start = context_id.indexOf("FINALPRICE:") + 11;
+			price_end = context_id.indexOf("||",price_start);
+			if(price_end == -1)
+			{
+				price_end = context_id.length();
+			}
+			final_price = context_id.subString(price_start,price_end);
+		}
+		if(context_id.contains("PKGTITLE:"))
+		{
+			title_start = context_id.indexOf("PKGTITLE:") + 9;
+			title_end = context_id.indexOf("||",title_start);
+			if(title_end == -1)
+			{
+				title_end = context_id.length();
+			}
+			pkg_title = context_id.subString(title_start,title_end);
+		}
+		if(context_id.contains("PKGDESC:"))
+		{
+			desc_start = context_id.indexOf("PKGDESC:") + 8;
+			desc_end = context_id.indexOf("||",desc_start);
+			if(desc_end == -1)
+			{
+				desc_end = context_id.length();
+			}
+			pkg_desc = context_id.subString(desc_start,desc_end);
+		}
+		if(context_id.contains("PKGHOTEL:"))
+		{
+			hotel_start = context_id.indexOf("PKGHOTEL:") + 9;
+			hotel_end = context_id.indexOf("||",hotel_start);
+			if(hotel_end == -1)
+			{
+				hotel_end = context_id.length();
+			}
+			pkg_hotel = context_id.subString(hotel_start,hotel_end);
+		}
+		if(context_id.contains("TRIPTYPE:"))
+		{
+			type_start = context_id.indexOf("TRIPTYPE:") + 9;
+			type_end = context_id.indexOf("||",type_start);
+			if(type_end == -1)
+			{
+				type_end = context_id.length();
+			}
+			trip_type = context_id.subString(type_start,type_end);
+		}
+		html_content = "<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f5f5f5;'>" + "<div style='background: linear-gradient(135deg, #0066cc 0%, #004a99 100%); padding: 30px 20px; text-align: center;'>" + "<div style='display: inline-block; margin-bottom: 10px;'>🧳</div>" + "<h1 style='color: white; margin: 0; font-size: 28px;'>TravelMate</h1>" + "<p style='color: #e0e0e0; margin: 5px 0 0 0; font-size: 14px;'>Your Journey Begins Here</p>" + "</div>" + "<div style='background: #4CAF50; padding: 15px; text-align: center;'>" + "<h2 style='color: white; margin: 0; font-size: 20px;'>✅ Booking Confirmed!</h2>" + "<p style='color: white; margin: 5px 0 0 0; font-size: 13px;'>Your trip is all set. Get ready for an amazing adventure!</p>" + "</div>" + "<div style='background: white; padding: 20px;'>" + "<p style='font-size: 15px; color: #333; margin: 0 0 20px 0;'>Dear <strong>" + user_name + "</strong>,</p>" + "<p style='font-size: 14px; color: #666; margin: 0 0 20px 0;'>Thank you for choosing TravelMate! We're excited to be part of your travel journey. Your booking has been confirmed and we're finalizing everything for your upcoming trip.</p>" + "<div style='background: #f9f9f9; border-left: 4px solid #0066cc; padding: 15px; margin-bottom: 25px;'>" + "<p style='margin: 0; font-size: 12px; color: #999; text-transform: uppercase; letter-spacing: 1px;'>Booking Reference</p>" + "<p style='margin: 5px 0 0 0; font-size: 24px; color: #0066cc; font-weight: bold; letter-spacing: 1px;'>" + booking_id + "</p>" + "</div>" + "<div style='border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden; margin-bottom: 25px;'>" + "<div style='background: #f8f8f8; padding: 12px 15px; border-bottom: 1px solid #e0e0e0;'>" + "<h3 style='margin: 0; font-size: 16px; color: #333;'>📋 Trip Details</h3>" + "</div>" + "<table style='width: 100%; border-collapse: collapse;'>" + "<tr style='border-bottom: 1px solid #f0f0f0;'>" + "<td style='padding: 12px 15px; color: #666; font-size: 14px; width: 40%;'>📍 Destination</td>" + "<td style='padding: 12px 15px; color: #333; font-size: 14px; font-weight: 500; text-align: right;'>" + destination + "</td>" + "</tr>" + "<tr style='border-bottom: 1px solid #f0f0f0;'>" + "<td style='padding: 12px 15px; color: #666; font-size: 14px;'>🎫 Package</td>" + "<td style='padding: 12px 15px; color: #333; font-size: 14px; font-weight: 500; text-align: right;'>" + pkg_title + "</td>" + "</tr>" + "<tr style='border-bottom: 1px solid #f0f0f0;'>" + "<td style='padding: 12px 15px; color: #666; font-size: 14px;'>🎒 Trip Type</td>" + "<td style='padding: 12px 15px; color: #333; font-size: 14px; font-weight: 500; text-align: right;'>" + trip_type + "</td>" + "</tr>" + "<tr style='border-bottom: 1px solid #f0f0f0;'>" + "<td style='padding: 12px 15px; color: #666; font-size: 14px;'>👥 Members</td>" + "<td style='padding: 12px 15px; color: #333; font-size: 14px; font-weight: 500; text-align: right;'>" + member_count + " Person(s)</td>" + "</tr>" + "<tr style='border-bottom: 1px solid #f0f0f0;'>" + "<td style='padding: 12px 15px; color: #666; font-size: 14px;'>📅 Travel Date</td>" + "<td style='padding: 12px 15px; color: #333; font-size: 14px; font-weight: 500; text-align: right;'>" + travel_date + "</td>" + "</tr>" + "<tr>" + "<td style='padding: 12px 15px; color: #666; font-size: 14px;'>💰 Total Amount</td>" + "<td style='padding: 12px 15px; color: #0066cc; font-size: 16px; font-weight: bold; text-align: right;'>₹" + final_price + "</td>" + "</tr>" + "</table>" + "</div>" + "<div style='background: #fffbf0; border: 1px solid #ffe082; border-radius: 8px; padding: 15px; margin-bottom: 25px;'>" + "<h3 style='margin: 0 0 10px 0; font-size: 15px; color: #f57c00;'>✨ Package Highlights</h3>" + "<p style='margin: 0 0 8px 0; font-size: 13px; color: #666;'><strong>🗺️ Sightseeing:</strong> " + pkg_desc + "</p>" + "<p style='margin: 0; font-size: 13px; color: #666;'><strong>🏨 Accommodation:</strong> " + pkg_hotel + "</p>" + "</div>" + "<div style='background: #fff9e6; border: 1px solid #ffe082; border-radius: 8px; padding: 15px; margin-bottom: 25px;'>" + "<h3 style='margin: 0 0 10px 0; font-size: 15px; color: #f57c00;'>📞 Your Contact Information</h3>" + "<p style='margin: 0 0 5px 0; font-size: 13px; color: #666;'>📧 <strong>Email:</strong> " + user_email + "</p>" + "<p style='margin: 0; font-size: 13px; color: #666;'>📱 <strong>Phone:</strong> " + user_phone + "</p>" + "</div>" + "<div style='background: #e3f2fd; border-left: 4px solid #2196F3; padding: 12px 15px; margin-bottom: 25px;'>" + "<p style='margin: 0; font-size: 13px; color: #1565C0;'><strong>💡 Important:</strong> Please keep this booking reference handy. Our team will contact you shortly with final itinerary and travel details!</p>" + "</div>" + "<div style='margin-bottom: 25px;'>" + "<h3 style='margin: 0 0 12px 0; font-size: 16px; color: #333;'>✈️ What's Next?</h3>" + "<ul style='margin: 0; padding-left: 20px; color: #666; font-size: 13px; line-height: 1.8;'>" + "<li>Our travel expert will call you within 24 hours</li>" + "<li>You'll receive detailed itinerary via email</li>" + "<li>Payment options will be shared with you</li>" + "<li>24/7 support available throughout your journey</li>" + "</ul>" + "</div>" + "<div style='text-align: center; margin-bottom: 20px;'>" + "<a href='mailto:travelmate003004@gmail.com' style='display: inline-block; background: #0066cc; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-size: 14px; font-weight: bold;'>Contact Support</a>" + "</div>" + "<p style='font-size: 13px; color: #666; text-align: center; margin: 0 0 10px 0;'>We're thrilled to be part of your travel experience and committed to making it memorable. Safe travels!</p>" + "<p style='font-size: 13px; color: #666; text-align: center; margin: 0;'><strong>Warm Regards,</strong><br>Team TravelMate 🌍✈️</p>" + "</div>" + "<div style='background: #333; padding: 20px; text-align: center;'>" + "<p style='margin: 0 0 3px 0; font-size: 11px; color: #666;'>This is an automated confirmation email. Please do not reply to this email.</p>" + "<p style='margin: 0; font-size: 11px; color: #666;'>© 2025 TravelMate. All rights reserved.</p>" + "</div>" + "</div>";
+		try 
+		{
+			sendgrid_api_key = "<SENDGRID_API_KEY>";
+			email_payload = Map();
+			personalizations = List();
+			person = Map();
+			to_list = List();
+			to_map = Map();
+			to_map.put("email",user_email);
+			to_map.put("name",user_name);
+			to_list.add(to_map);
+			person.put("to",to_list);
+			personalizations.add(person);
+			email_payload.put("personalizations",personalizations);
+			from_map = Map();
+			from_map.put("email","travelmate003004@gmail.com");
+			from_map.put("name","TravelMate");
+			email_payload.put("from",from_map);
+			email_payload.put("subject","🎉 Booking Confirmation - " + pkg_title + " | " + booking_id);
+			content_list = List();
+			content_map = Map();
+			content_map.put("type","text/html");
+			content_map.put("value",html_content);
+			content_list.add(content_map);
+			email_payload.put("content",content_list);
+			confirmation_response = invokeurl
+			[
+				url :"https://api.sendgrid.com/v3/mail/send"
+				type :POST
+				parameters:email_payload.toString()
+				headers:{"Authorization":"Bearer " + sendgrid_api_key,"Content-Type":"application/json"}
+			];
+			response.put("action","reply");
+			response.put("replies",{"✅ Great! I've sent your booking confirmation to " + user_email + ". Please check your inbox for all the details about your trip to " + destination + "!\n\n🎫 Booking ID: " + booking_id + "\n\nIs there anything else I can help you with?"});
+		}
+		catch (e)
+		{
+			info "Email sending error: " + e;
+			response.put("action","reply");
+			response.put("replies",{"⚠️ I apologize, but there was an issue sending the email. However, here are your booking details:\n\n🎫 Booking ID: " + booking_id + "\n📍 Destination: " + destination + "\n📅 Travel Date: " + travel_date + "\n👥 Members: " + member_count + "\n💰 Total Amount: ₹" + final_price + "\n\nPlease save this information. Would you like me to try sending the email again?"});
+		}
+		return response;
+	}
+	else if(choice == "Want to explore again! Click here.")
+	{
+		response.put("action","context");
+		response.put("context_id","main_menu");
+		question = {"name":"main_choice","replies":{"🌍 Let's plan your next adventure! Where would you like to explore?"},"suggestions":{"Explore India","Explore International"}};
+		response.put("questions",{question});
+		return response;
+	}
+	else if(choice == "End chat")
+	{
+		response.put("action","reply");
+		response.put("replies",{"Thank you for using TravelMate! Have a wonderful trip and feel free to reach out anytime. Safe travels! 🌍✈️"});
+		return response;
+	}
+}
+// DEFAULT FALLBACK
+response.put("action","reply");
+response.put("replies",{"I can only respond to the button options provided. Please use the buttons to continue."});
+return response;
