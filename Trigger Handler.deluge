@@ -1,0 +1,5 @@
+response = Map();
+response.put("action","reply");
+response.put("replies",{{"text":"Welcome to TravelMate!","image":"https://raw.githubusercontent.com/K-Mokshagna/TravelMate-images/main/Welcome%20image.jpeg"},{"text":"Hi! I'm your TravelMate bot. Shall we start your journey!"}});
+response.put("suggestions",{"Start my journey!","I'll start it later."});
+return response;
