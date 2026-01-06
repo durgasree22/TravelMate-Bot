@@ -1,0 +1,29 @@
+response = Map();
+msg = ifnull(message.get("text"),"");
+if(msg == "I'll start it later.")
+{
+	response.put("action","reply");
+	response.put("replies",{"Ok! I will be waiting to assist you anytime. Click on the below 'Restart' button to start your journey again."});
+	response.put("suggestions",{"Restart"});
+	return response;
+}
+if(msg == "Restart")
+{
+	response.put("action","reply");
+	response.put("replies",{{"text":"Welcome back to TravelMate!","image":"https://raw.githubusercontent.com/K-Mokshagna/TravelMate-images/main/Welcome%20image.jpeg"},{"text":"Hi! I'm your TravelMate bot. Shall we start your journey!"}});
+	response.put("suggestions",{"Start my journey!","I'll start it later."});
+	return response;
+}
+if(msg == "Start my journey!")
+{
+	response.put("action","context");
+	response.put("context_id","journey_type_selection");
+	question = {"name":"journey_type","replies":{"Great! Let's get started. How would you like to plan your trip?\nChoose 'Explore Destinations' for fixed tour packages.\nChoose 'Plan an Itinerary' for custom tour package selection."},"suggestions":{"Explore Destinations","Plan an Itinerary"}};
+	response.put("questions",{question});
+	return response;
+}
+response.put("action","context");
+response.put("context_id","journey_type_selection");
+question = {"name":"journey_type","replies":{"How would you like to plan your trip?"},"suggestions":{"Explore Destinations","Plan an Itinerary"}};
+response.put("questions",{question});
+return response;
